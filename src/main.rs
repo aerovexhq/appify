@@ -31,6 +31,10 @@ enum Commands {
         /// Custom icon path or URL (defaults to auto-fetching from website)
         #[arg(long)]
         icon: Option<String>,
+
+        /// Additional domains to keep inside the app (can be repeated, e.g. -a whatsapp.net)
+        #[arg(short = 'a', long = "allow-domain")]
+        allow_domain: Vec<String>,
     },
     /// Run an app directly in an isolated webview
     Run {
@@ -47,6 +51,10 @@ enum Commands {
         /// Path to window icon
         #[arg(long)]
         icon: Option<String>,
+
+        /// Additional domains to keep inside the app (can be repeated, e.g. -a whatsapp.net)
+        #[arg(short = 'a', long = "allow-domain")]
+        allow_domain: Vec<String>,
     },
     /// Uninstall an app by URL or alias
     Uninstall {
@@ -66,24 +74,342 @@ struct AppMetadata {
     wm_class: String,
     custom_icon: Option<String>,
     hash: String,
+    allowed_domains: Vec<String>,
+    custom_allowed_domains: Vec<String>,
 }
 
-fn get_popular_aliases() -> HashMap<&'static str, (&'static str, &'static str, &'static str)> {
+#[derive(Debug, Clone)]
+struct AliasInfo {
+    url: &'static str,
+    name: &'static str,
+    wm_class: &'static str,
+    ecosystem_domains: &'static [&'static str],
+}
+
+fn get_popular_aliases() -> HashMap<&'static str, AliasInfo> {
     let mut map = HashMap::new();
-    map.insert("whatsapp", ("https://web.whatsapp.com", "WhatsApp", "whatsapp-desktop"));
-    map.insert("discord", ("https://discord.com/app", "Discord", "discord-app"));
-    map.insert("telegram", ("https://web.telegram.org", "Telegram", "telegram-web"));
-    map.insert("spotify", ("https://open.spotify.com", "Spotify", "spotify-web"));
-    map.insert("netflix", ("https://www.netflix.com", "Netflix", "netflix-app"));
-    map.insert("youtube", ("https://youtube.com", "YouTube", "youtube-app"));
-    map.insert("twitter", ("https://x.com", "X", "twitter-x"));
-    map.insert("x", ("https://x.com", "X", "twitter-x"));
-    map.insert("reddit", ("https://reddit.com", "Reddit", "reddit-app"));
-    map.insert("chatgpt", ("https://chatgpt.com", "ChatGPT", "chatgpt-app"));
-    map.insert("notion", ("https://notion.so", "Notion", "notion-app"));
-    map.insert("figma", ("https://figma.com", "Figma", "figma-app"));
-    map.insert("gmail", ("https://mail.google.com", "Gmail", "gmail-app"));
+    map.insert(
+        "whatsapp",
+        AliasInfo {
+            url: "https://web.whatsapp.com",
+            name: "WhatsApp",
+            wm_class: "whatsapp-desktop",
+            ecosystem_domains: &[
+                "whatsapp.com",
+                "whatsapp.net",
+                "fbcdn.net",
+                "facebook.com",
+                "messenger.com",
+            ],
+        },
+    );
+    map.insert(
+        "discord",
+        AliasInfo {
+            url: "https://discord.com/app",
+            name: "Discord",
+            wm_class: "discord-app",
+            ecosystem_domains: &[
+                "discord.com",
+                "discord.gg",
+                "discordapp.com",
+                "discordapp.net",
+                "discord.media",
+                "discordcdn.com",
+            ],
+        },
+    );
+    map.insert(
+        "telegram",
+        AliasInfo {
+            url: "https://web.telegram.org",
+            name: "Telegram",
+            wm_class: "telegram-web",
+            ecosystem_domains: &[
+                "telegram.org",
+                "t.me",
+                "web.telegram.org",
+                "telesco.pe",
+            ],
+        },
+    );
+    map.insert(
+        "spotify",
+        AliasInfo {
+            url: "https://open.spotify.com",
+            name: "Spotify",
+            wm_class: "spotify-web",
+            ecosystem_domains: &[
+                "spotify.com",
+                "scdn.co",
+                "spotifycdn.com",
+                "spotify.link",
+            ],
+        },
+    );
+    map.insert(
+        "netflix",
+        AliasInfo {
+            url: "https://www.netflix.com",
+            name: "Netflix",
+            wm_class: "netflix-app",
+            ecosystem_domains: &[
+                "netflix.com",
+                "nflxext.com",
+                "nflximg.net",
+                "nflxso.net",
+                "nflxvideo.net",
+            ],
+        },
+    );
+    map.insert(
+        "youtube",
+        AliasInfo {
+            url: "https://youtube.com",
+            name: "YouTube",
+            wm_class: "youtube-app",
+            ecosystem_domains: &[
+                "youtube.com",
+                "youtu.be",
+                "googlevideo.com",
+                "ytimg.com",
+                "google.com",
+                "gstatic.com",
+                "accounts.google.com",
+            ],
+        },
+    );
+    map.insert(
+        "twitter",
+        AliasInfo {
+            url: "https://x.com",
+            name: "X",
+            wm_class: "twitter-x",
+            ecosystem_domains: &["x.com", "twitter.com", "t.co", "twimg.com"],
+        },
+    );
+    map.insert(
+        "x",
+        AliasInfo {
+            url: "https://x.com",
+            name: "X",
+            wm_class: "twitter-x",
+            ecosystem_domains: &["x.com", "twitter.com", "t.co", "twimg.com"],
+        },
+    );
+    map.insert(
+        "reddit",
+        AliasInfo {
+            url: "https://reddit.com",
+            name: "Reddit",
+            wm_class: "reddit-app",
+            ecosystem_domains: &[
+                "reddit.com",
+                "redd.it",
+                "redditstatic.com",
+                "redditmedia.com",
+            ],
+        },
+    );
+    map.insert(
+        "chatgpt",
+        AliasInfo {
+            url: "https://chatgpt.com",
+            name: "ChatGPT",
+            wm_class: "chatgpt-app",
+            ecosystem_domains: &[
+                "chatgpt.com",
+                "openai.com",
+                "oaistatic.com",
+                "oaiusercontent.com",
+                "auth0.com",
+            ],
+        },
+    );
+    map.insert(
+        "notion",
+        AliasInfo {
+            url: "https://notion.so",
+            name: "Notion",
+            wm_class: "notion-app",
+            ecosystem_domains: &["notion.so", "notion.site", "notion.com"],
+        },
+    );
+    map.insert(
+        "figma",
+        AliasInfo {
+            url: "https://figma.com",
+            name: "Figma",
+            wm_class: "figma-app",
+            ecosystem_domains: &["figma.com"],
+        },
+    );
+    map.insert(
+        "gmail",
+        AliasInfo {
+            url: "https://mail.google.com",
+            name: "Gmail",
+            wm_class: "gmail-app",
+            ecosystem_domains: &[
+                "mail.google.com",
+                "google.com",
+                "accounts.google.com",
+                "gstatic.com",
+                "googleusercontent.com",
+            ],
+        },
+    );
     map
+}
+
+fn get_ecosystem_domains_for_base(base_domain: &str) -> Vec<&'static str> {
+    match base_domain {
+        "whatsapp.com" | "whatsapp.net" => vec![
+            "whatsapp.com",
+            "whatsapp.net",
+            "fbcdn.net",
+            "facebook.com",
+            "messenger.com",
+        ],
+        "discord.com" | "discord.gg" | "discordapp.com" => vec![
+            "discord.com",
+            "discord.gg",
+            "discordapp.com",
+            "discordapp.net",
+            "discord.media",
+            "discordcdn.com",
+        ],
+        "telegram.org" | "t.me" => {
+            vec!["telegram.org", "t.me", "web.telegram.org", "telesco.pe"]
+        }
+        "spotify.com" => vec!["spotify.com", "scdn.co", "spotifycdn.com", "spotify.link"],
+        "netflix.com" => vec![
+            "netflix.com",
+            "nflxext.com",
+            "nflximg.net",
+            "nflxso.net",
+            "nflxvideo.net",
+        ],
+        "youtube.com" | "youtu.be" => vec![
+            "youtube.com",
+            "youtu.be",
+            "googlevideo.com",
+            "ytimg.com",
+            "google.com",
+            "gstatic.com",
+            "accounts.google.com",
+        ],
+        "x.com" | "twitter.com" => vec!["x.com", "twitter.com", "t.co", "twimg.com"],
+        "reddit.com" | "redd.it" => vec![
+            "reddit.com",
+            "redd.it",
+            "redditstatic.com",
+            "redditmedia.com",
+        ],
+        "openai.com" | "chatgpt.com" => vec![
+            "chatgpt.com",
+            "openai.com",
+            "oaistatic.com",
+            "oaiusercontent.com",
+            "auth0.com",
+        ],
+        "notion.so" | "notion.site" => vec!["notion.so", "notion.site", "notion.com"],
+        "gmail.com" => vec![
+            "mail.google.com",
+            "google.com",
+            "accounts.google.com",
+            "gstatic.com",
+            "googleusercontent.com",
+        ],
+        _ => vec![],
+    }
+}
+
+const COMMON_SSO_DOMAINS: &[&str] = &[
+    "accounts.google.com",
+    "appleid.apple.com",
+    "login.microsoftonline.com",
+    "login.live.com",
+];
+
+const NOTIFICATION_POLYFILL: &str = r#"
+(function() {
+    if (typeof window.Notification === 'undefined' || window.Notification.permission !== 'granted') {
+        function AppifyNotification(title, options) {
+            this.title = title;
+            this.options = options || {};
+            this.onclick = null;
+            this.onclose = null;
+            this.onerror = null;
+            this.onshow = null;
+        }
+        AppifyNotification.permission = 'granted';
+        AppifyNotification.requestPermission = function(cb) {
+            var promise = Promise.resolve('granted');
+            if (typeof cb === 'function') {
+                promise.then(cb);
+            }
+            return promise;
+        };
+        AppifyNotification.prototype.close = function() {
+            if (typeof this.onclose === 'function') {
+                this.onclose();
+            }
+        };
+        AppifyNotification.prototype.addEventListener = function(type, listener) {
+            this['on' + type] = listener;
+        };
+        AppifyNotification.prototype.removeEventListener = function(type) {
+            this['on' + type] = null;
+        };
+        AppifyNotification.prototype.dispatchEvent = function() {
+            return true;
+        };
+        window.Notification = AppifyNotification;
+    }
+})();
+"#;
+
+fn domain_matches(host: &str, pattern: &str) -> bool {
+    let host = host.trim().to_lowercase();
+    let mut pattern = pattern.trim().to_lowercase();
+    if let Some(stripped) = pattern.strip_prefix("*.") {
+        pattern = stripped.to_string();
+    }
+    if let Some(stripped) = pattern.strip_prefix('.') {
+        pattern = stripped.to_string();
+    }
+
+    if host == pattern {
+        return true;
+    }
+    if host.ends_with(&format!(".{}", pattern)) {
+        return true;
+    }
+    false
+}
+
+fn is_internal_navigation(url: &Url, base_domain: &str, allowed_domains: &[String]) -> bool {
+    let scheme = url.scheme();
+    if scheme == "blob" || scheme == "data" || scheme == "about" || scheme == "javascript" {
+        return true;
+    }
+    if scheme != "http" && scheme != "https" {
+        return false;
+    }
+    let host = match url.host_str() {
+        Some(h) => h,
+        None => return false,
+    };
+    if domain_matches(host, base_domain) {
+        return true;
+    }
+    for allowed in allowed_domains {
+        if domain_matches(host, allowed) {
+            return true;
+        }
+    }
+    false
 }
 
 fn resolve_metadata(
@@ -91,15 +417,22 @@ fn resolve_metadata(
     custom_name: Option<String>,
     custom_wm_class: Option<String>,
     custom_icon: Option<String>,
+    cli_allowed_domains: Vec<String>,
 ) -> Result<AppMetadata, String> {
     let aliases = get_popular_aliases();
     let lower_input = raw_input.trim().to_lowercase();
 
-    let (mut raw_url, default_name, default_wm) = if let Some(&(u, n, wm)) = aliases.get(lower_input.as_str()) {
-        (u.to_string(), Some(n.to_string()), Some(wm.to_string()))
-    } else {
-        (raw_input.trim().to_string(), None, None)
-    };
+    let (mut raw_url, default_name, default_wm, alias_domains) =
+        if let Some(info) = aliases.get(lower_input.as_str()) {
+            (
+                info.url.to_string(),
+                Some(info.name.to_string()),
+                Some(info.wm_class.to_string()),
+                info.ecosystem_domains.to_vec(),
+            )
+        } else {
+            (raw_input.trim().to_string(), None, None, vec![])
+        };
 
     if !raw_url.starts_with("http://") && !raw_url.starts_with("https://") {
         raw_url = format!("https://{}", raw_url);
@@ -132,6 +465,24 @@ fn resolve_metadata(
         .or(default_wm)
         .unwrap_or_else(|| format!("appify-{}", &hash[..12]));
 
+    let mut allowed_set = std::collections::BTreeSet::new();
+    allowed_set.insert(base_domain.clone());
+
+    for d in alias_domains {
+        allowed_set.insert(d.to_string());
+    }
+    for d in get_ecosystem_domains_for_base(&base_domain) {
+        allowed_set.insert(d.to_string());
+    }
+    for d in COMMON_SSO_DOMAINS {
+        allowed_set.insert(d.to_string());
+    }
+    for d in &cli_allowed_domains {
+        allowed_set.insert(d.trim().to_lowercase());
+    }
+
+    let allowed_domains: Vec<String> = allowed_set.into_iter().collect();
+
     Ok(AppMetadata {
         url: raw_url,
         base_domain,
@@ -139,6 +490,8 @@ fn resolve_metadata(
         wm_class: final_wm,
         custom_icon,
         hash,
+        allowed_domains,
+        custom_allowed_domains: cli_allowed_domains,
     })
 }
 
@@ -205,6 +558,7 @@ fn set_linux_app_id(app_id: &str) {
 fn execute_run(meta: AppMetadata) {
     let target_url: Url = meta.url.parse().expect("Failed to parse URL");
     let base_domain = meta.base_domain.clone();
+    let allowed_domains = meta.allowed_domains.clone();
     let win_title = meta.name.clone();
 
     #[cfg(target_os = "linux")]
@@ -223,7 +577,14 @@ fn execute_run(meta: AppMetadata) {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .setup(move |app| {
-            let handle = app.handle().clone();
+            let handle_nav = app.handle().clone();
+            let handle_new_win = app.handle().clone();
+
+            let base_domain_for_nav = base_domain.clone();
+            let allowed_domains_for_nav = allowed_domains.clone();
+
+            let base_domain_for_new_win = base_domain.clone();
+            let allowed_domains_for_new_win = allowed_domains.clone();
 
             let mut builder = tauri::WebviewWindowBuilder::new(
                 app,
@@ -234,7 +595,8 @@ fn execute_run(meta: AppMetadata) {
                 .inner_size(1100.0, 800.0)
                 .min_inner_size(800.0, 600.0)
                 .center()
-                .data_directory(data_dir);
+                .data_directory(data_dir)
+                .initialization_script(NOTIFICATION_POLYFILL);
 
             if let Some(ref icon_path_str) = meta.custom_icon {
                 let p = Path::new(icon_path_str);
@@ -249,14 +611,53 @@ fn execute_run(meta: AppMetadata) {
 
             builder
                 .on_navigation(move |nav_url| {
-                    let host = nav_url.host_str().unwrap_or("");
-                    let scheme = nav_url.scheme();
-
-                    if host.contains(&base_domain) || scheme == "blob" || scheme == "data" {
+                    if is_internal_navigation(nav_url, &base_domain_for_nav, &allowed_domains_for_nav) {
                         true
                     } else {
-                        let _ = handle.opener().open_url(nav_url.as_str(), None::<&str>);
+                        let _ = handle_nav.opener().open_url(nav_url.as_str(), None::<&str>);
                         false
+                    }
+                })
+                .on_new_window(move |new_url, _features| {
+                    if is_internal_navigation(&new_url, &base_domain_for_new_win, &allowed_domains_for_new_win) {
+                        tauri::webview::NewWindowResponse::Allow
+                    } else {
+                        let _ = handle_new_win.opener().open_url(new_url.as_str(), None::<&str>);
+                        tauri::webview::NewWindowResponse::Deny
+                    }
+                })
+                .on_document_title_changed(move |window, title| {
+                    let is_unread = title.starts_with('(') || title.contains("Unread") || title.contains("•");
+                    if is_unread {
+                        let _ = window.request_user_attention(Some(tauri::UserAttentionType::Informational));
+                    } else {
+                        let _ = window.request_user_attention(None);
+                    }
+                })
+                .on_download(|_webview, event| {
+                    match event {
+                        tauri::webview::DownloadEvent::Requested { url, destination } => {
+                            let filename = destination
+                                .file_name()
+                                .map(|s| s.to_string_lossy().to_string())
+                                .filter(|s| !s.is_empty())
+                                .or_else(|| {
+                                    url.path_segments()
+                                        .and_then(|mut segs| segs.next_back())
+                                        .filter(|s| !s.is_empty())
+                                        .map(|s| s.to_string())
+                                })
+                                .unwrap_or_else(|| "download".to_string());
+
+                            let download_dir = dirs::download_dir().unwrap_or_else(|| {
+                                dirs::home_dir()
+                                    .map(|h| h.join("Downloads"))
+                                    .unwrap_or_else(|| PathBuf::from("."))
+                            });
+                            *destination = download_dir.join(filename);
+                            true
+                        }
+                        _ => true,
                     }
                 })
                 .build()?;
@@ -392,13 +793,24 @@ fn execute_install(meta: AppMetadata) {
         fetch_icon(&meta.url, &icon_path);
     }
 
+    let allow_flags = if !meta.custom_allowed_domains.is_empty() {
+        let flags: Vec<String> = meta
+            .custom_allowed_domains
+            .iter()
+            .map(|d| format!("--allow-domain \"{}\"", d))
+            .collect();
+        format!(" {}", flags.join(" "))
+    } else {
+        String::new()
+    };
+
     let desktop_path = apps_dir.join(format!("appify-{}.desktop", &meta.hash));
     let desktop_content = format!(
         "[Desktop Entry]\n\
         Version=1.0\n\
         Type=Application\n\
         Name={name}\n\
-        Exec={bin} run \"{url}\" \"{name}\" --wm-class \"{wm_class}\" --icon \"{icon}\"\n\
+        Exec={bin} run \"{url}\" \"{name}\" --wm-class \"{wm_class}\" --icon \"{icon}\"{allow_flags}\n\
         Icon={icon}\n\
         Terminal=false\n\
         Categories=Network;WebBrowser;\n\
@@ -410,6 +822,7 @@ fn execute_install(meta: AppMetadata) {
         url = meta.url,
         wm_class = meta.wm_class,
         icon = icon_path.display(),
+        allow_flags = allow_flags,
         hash = meta.hash
     );
 
@@ -424,7 +837,7 @@ fn execute_install(meta: AppMetadata) {
 }
 
 fn execute_uninstall(raw_url: &str) {
-    let meta = match resolve_metadata(raw_url, None, None, None) {
+    let meta = match resolve_metadata(raw_url, None, None, None, vec![]) {
         Ok(m) => m,
         Err(e) => {
             eprintln!("[!] {}", e);
@@ -496,18 +909,26 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Install { url, name, wm_class, icon } => {
-            match resolve_metadata(&url, name, wm_class, icon) {
-                Ok(meta) => execute_install(meta),
-                Err(e) => eprintln!("[!] Error: {}", e),
-            }
-        }
-        Commands::Run { url, name, wm_class, icon } => {
-            match resolve_metadata(&url, name, wm_class, icon) {
-                Ok(meta) => execute_run(meta),
-                Err(e) => eprintln!("[!] Error: {}", e),
-            }
-        }
+        Commands::Install {
+            url,
+            name,
+            wm_class,
+            icon,
+            allow_domain,
+        } => match resolve_metadata(&url, name, wm_class, icon, allow_domain) {
+            Ok(meta) => execute_install(meta),
+            Err(e) => eprintln!("[!] Error: {}", e),
+        },
+        Commands::Run {
+            url,
+            name,
+            wm_class,
+            icon,
+            allow_domain,
+        } => match resolve_metadata(&url, name, wm_class, icon, allow_domain) {
+            Ok(meta) => execute_run(meta),
+            Err(e) => eprintln!("[!] Error: {}", e),
+        },
         Commands::Uninstall { url } => {
             execute_uninstall(&url);
         }
@@ -541,35 +962,38 @@ mod tests {
         assert!(aliases.contains_key("figma"));
         assert!(aliases.contains_key("gmail"));
 
-        for (alias, (url, name, wm)) in &aliases {
+        for (alias, info) in &aliases {
             assert!(!alias.is_empty());
-            assert!(url.starts_with("https://"));
-            assert!(!name.is_empty());
-            assert!(!wm.is_empty());
+            assert!(info.url.starts_with("https://"));
+            assert!(!info.name.is_empty());
+            assert!(!info.wm_class.is_empty());
         }
     }
 
     #[test]
     fn test_resolve_metadata_alias() {
-        let meta = resolve_metadata("whatsapp", None, None, None).unwrap();
+        let meta = resolve_metadata("whatsapp", None, None, None, vec![]).unwrap();
         assert_eq!(meta.url, "https://web.whatsapp.com");
         assert_eq!(meta.name, "WhatsApp");
         assert_eq!(meta.wm_class, "whatsapp-desktop");
         assert_eq!(meta.base_domain, "whatsapp.com");
         assert_eq!(meta.hash.len(), 64);
+        assert!(meta.allowed_domains.contains(&"whatsapp.net".to_string()));
+        assert!(meta.allowed_domains.contains(&"fbcdn.net".to_string()));
     }
 
     #[test]
     fn test_resolve_metadata_case_insensitive_alias() {
-        let meta = resolve_metadata("  DISCORD  ", None, None, None).unwrap();
+        let meta = resolve_metadata("  DISCORD  ", None, None, None, vec![]).unwrap();
         assert_eq!(meta.url, "https://discord.com/app");
         assert_eq!(meta.name, "Discord");
         assert_eq!(meta.wm_class, "discord-app");
+        assert!(meta.allowed_domains.contains(&"discord.gg".to_string()));
     }
 
     #[test]
     fn test_resolve_metadata_raw_url_no_scheme() {
-        let meta = resolve_metadata("github.com", None, None, None).unwrap();
+        let meta = resolve_metadata("github.com", None, None, None, vec![]).unwrap();
         assert_eq!(meta.url, "https://github.com");
         assert_eq!(meta.name, "github.com");
         assert_eq!(meta.base_domain, "github.com");
@@ -578,7 +1002,7 @@ mod tests {
 
     #[test]
     fn test_resolve_metadata_trailing_slash_stripped() {
-        let meta = resolve_metadata("https://example.org/", None, None, None).unwrap();
+        let meta = resolve_metadata("https://example.org/", None, None, None, vec![]).unwrap();
         assert_eq!(meta.url, "https://example.org");
     }
 
@@ -589,33 +1013,92 @@ mod tests {
             Some("Linear Work".to_string()),
             Some("custom-linear".to_string()),
             Some("/path/to/icon.png".to_string()),
+            vec!["linear.com".to_string()],
         )
         .unwrap();
 
         assert_eq!(meta.name, "Linear Work");
         assert_eq!(meta.wm_class, "custom-linear");
         assert_eq!(meta.custom_icon, Some("/path/to/icon.png".to_string()));
+        assert!(meta.allowed_domains.contains(&"linear.com".to_string()));
+        assert_eq!(meta.custom_allowed_domains, vec!["linear.com".to_string()]);
     }
 
     #[test]
     fn test_resolve_metadata_localhost() {
-        let meta = resolve_metadata("http://localhost:3000", None, None, None).unwrap();
+        let meta = resolve_metadata("http://localhost:3000", None, None, None, vec![]).unwrap();
         assert_eq!(meta.url, "http://localhost:3000");
         assert_eq!(meta.base_domain, "localhost");
     }
 
     #[test]
     fn test_resolve_metadata_invalid_domain() {
-        let res = resolve_metadata("notadomain", None, None, None);
+        let res = resolve_metadata("notadomain", None, None, None, vec![]);
         assert!(res.is_err());
         assert!(res.unwrap_err().contains("not appear to be a valid domain"));
     }
 
     #[test]
     fn test_hash_consistency() {
-        let meta1 = resolve_metadata("https://github.com", None, None, None).unwrap();
-        let meta2 = resolve_metadata("github.com", None, None, None).unwrap();
+        let meta1 = resolve_metadata("https://github.com", None, None, None, vec![]).unwrap();
+        let meta2 = resolve_metadata("github.com", None, None, None, vec![]).unwrap();
         assert_eq!(meta1.hash, meta2.hash);
+    }
+
+    #[test]
+    fn test_domain_matches() {
+        assert!(domain_matches("flows.whatsapp.net", "whatsapp.net"));
+        assert!(domain_matches("webtp.whatsapp.net", "whatsapp.net"));
+        assert!(domain_matches("whatsapp.net", "whatsapp.net"));
+        assert!(domain_matches("static.whatsapp.net", "*.whatsapp.net"));
+        assert!(domain_matches("static.whatsapp.net", ".whatsapp.net"));
+        assert!(domain_matches("WEB.WHATSAPP.COM", "whatsapp.com"));
+        assert!(!domain_matches("attackerwhatsapp.net", "whatsapp.net"));
+        assert!(!domain_matches("google.com", "whatsapp.net"));
+    }
+
+    #[test]
+    fn test_is_internal_navigation_whatsapp() {
+        let allowed = vec![
+            "whatsapp.com".to_string(),
+            "whatsapp.net".to_string(),
+            "fbcdn.net".to_string(),
+            "accounts.google.com".to_string(),
+        ];
+        let base = "whatsapp.com";
+
+        // Internal WhatsApp flows / cache URLs that previously leaked to default browser
+        let url_flows = Url::parse("https://flows.whatsapp.net/flows/cache_management/").unwrap();
+        assert!(is_internal_navigation(&url_flows, base, &allowed));
+
+        let url_pdf = Url::parse("https://webtp.whatsapp.net/pdf-viewer/?locale=en_GB").unwrap();
+        assert!(is_internal_navigation(&url_pdf, base, &allowed));
+
+        let url_main = Url::parse("https://web.whatsapp.com").unwrap();
+        assert!(is_internal_navigation(&url_main, base, &allowed));
+
+        // OAuth SSO
+        let url_sso = Url::parse("https://accounts.google.com/o/oauth2/v2/auth?client_id=123").unwrap();
+        assert!(is_internal_navigation(&url_sso, base, &allowed));
+
+        // External untrusted website
+        let url_external = Url::parse("https://nytimes.com/article123").unwrap();
+        assert!(!is_internal_navigation(&url_external, base, &allowed));
+    }
+
+    #[test]
+    fn test_is_internal_navigation_schemes() {
+        let allowed = vec![];
+        let base = "example.com";
+
+        let blob_url = Url::parse("blob:https://example.com/1234-5678").unwrap();
+        assert!(is_internal_navigation(&blob_url, base, &allowed));
+
+        let data_url = Url::parse("data:image/png;base64,iVBORw0KGgo=").unwrap();
+        assert!(is_internal_navigation(&data_url, base, &allowed));
+
+        let about_url = Url::parse("about:blank").unwrap();
+        assert!(is_internal_navigation(&about_url, base, &allowed));
     }
 
     #[test]
