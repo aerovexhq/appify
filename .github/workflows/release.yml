@@ -59,4 +59,5 @@ jobs:
           releaseName: "Appify ${{ github.ref_name }}"
           releaseDraft: true      # <-- stays a draft until you publish it manually
           prerelease: false
+          includeUpdaterJson: false  # no updater configured in tauri.conf.json, so don't expect .sig files
           args: ${{ matrix.args }}
