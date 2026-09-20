@@ -52,14 +52,14 @@ jobs:
       - name: Rust build cache
         uses: swatinem/rust-cache@v2
 
-      - name: Build and create draft release
+      - name: Build and publish release
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: "Appify ${{ github.ref_name }}"
-          releaseDraft: true      # <-- stays a draft until you publish it manually
+          releaseDraft: false
           prerelease: false
           includeUpdaterJson: false  # no updater configured in tauri.conf.json, so don't expect .sig files
           uploadPlainBinary: true

@@ -29,9 +29,6 @@ Appify is a single self-contained binary — no runtime dependencies to install 
 Grab one from [Releases](../../releases) instead of building it yourself, unless you need a platform/
 architecture that isn't published there, in which case see [Build from source](#build-from-source).
 
-> Releases are published as **drafts** and reviewed before going live, so only published (non-draft)
-> releases on the Releases page are meant for general use.
-
 ### Linux
 
 ```bash
