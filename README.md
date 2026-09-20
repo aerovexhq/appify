@@ -53,9 +53,9 @@ source ~/.bashrc
 
 ```bash
 # Download the release asset for your chip:
-#   Apple Silicon: appify_macos_aarch64
-#   Intel:         appify_macos_x64
-sudo mv appify_macos_<arch> /usr/local/bin/appify
+#   Apple Silicon: appify_darwin_aarch64
+#   Intel:         appify_darwin_x64
+sudo mv appify_darwin_<arch> /usr/local/bin/appify
 sudo chmod +x /usr/local/bin/appify
 ```
 
