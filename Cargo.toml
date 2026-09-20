@@ -1,0 +1,18 @@
+[package]
+name = "appify"
+version = "0.1.0"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2.0.0", features = [] }
+
+[dependencies]
+tauri = { version = "2.0.0", features = ["image-png"] }
+tauri-plugin-opener = "2.0.0"
+clap = { version = "4.5", features = ["derive"] }
+sha2 = "0.10"
+hex = "0.4"
+url = "2.5"
+ureq = "2.9"
+scraper = "0.19"
+dirs = "5.0"

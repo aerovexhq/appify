@@ -1,0 +1,18 @@
+{
+  "productName": "appify",
+  "version": "0.1.0",
+  "identifier": "com.appify.runtime",
+  "build": {
+    "devUrl": null,
+    "frontendDist": null
+  },
+  "app": {
+    "windows": [],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "icon": ["icons/icon.png"]
+  }
+}
