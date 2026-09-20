@@ -25,9 +25,25 @@ in the app window.
 
 ## Installation
 
+### Quick Install (Linux & macOS)
+
+Install the latest release with a single command:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/larvance/tauri-appify/main/install.sh | bash
+```
+
+This automatically detects your OS and CPU architecture, downloads the latest binary directly to `~/.local/bin/appify`, and makes it executable.
+
+---
+
+### Manual Download
+
 Appify is a single self-contained binary — no runtime dependencies to install once you have it in hand.
 Grab one from [Releases](../../releases) instead of building it yourself, unless you need a platform/
 architecture that isn't published there, in which case see [Build from source](#build-from-source).
+
+> **Automatic Persistence:** Even if you just download the binary to your `~/Downloads` folder and run it (e.g. `./appify_linux_x64 install whatsapp` or `./appify_linux_x64 self-install`), Appify automatically relocates itself to your persistent user binary directory (`~/.local/bin/appify` on Linux/macOS) and registers desktop entries to that permanent location. Clearing your `Downloads` folder will never break your installed desktop web apps.
 
 ### Linux
 
@@ -145,13 +161,15 @@ appify install <URL or alias> [NAME] [--wm-class <CLASS>] [--icon <PATH_OR_URL>]
 appify run     <URL or alias> [NAME] [--wm-class <CLASS>] [--icon <PATH>]
 appify uninstall <URL or alias>
 appify list
+appify self-install
 ```
 
-* `install` — writes a desktop launcher so the app is available from your app menu, and downloads/caches its icon.
+* `install` — writes a desktop launcher so the app is available from your app menu, and downloads/caches its icon. Automatically ensures `appify` is installed to `~/.local/bin/appify`.
 * `run` — opens the app directly in an isolated window without touching your desktop launchers (useful for
   testing, or as the command the generated `.desktop` file itself calls).
 * `uninstall` — removes the launcher, icon, and cached session profile for a given app.
 * `list` — prints every app currently installed via Appify.
+* `self-install` — installs the `appify` binary itself to `~/.local/bin/appify` (or system PATH).
 
 `NAME`, `--wm-class`, and `--icon` are all optional — Appify fills in sensible defaults (see below) when
 they're omitted.

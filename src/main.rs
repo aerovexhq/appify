@@ -54,6 +54,8 @@ enum Commands {
     },
     /// List all installed applications
     List,
+    /// Install the appify binary itself to ~/.local/bin (or system PATH)
+    SelfInstall,
 }
 
 #[derive(Debug, Clone)]
@@ -265,9 +267,110 @@ fn execute_run(meta: AppMetadata) {
         .expect("Error while running Appify instance");
 }
 
+fn get_persistent_bin_path() -> PathBuf {
+    #[cfg(windows)]
+    {
+        let local_app_data = dirs::data_local_dir()
+            .unwrap_or_else(|| dirs::home_dir().unwrap_or_else(|| PathBuf::from(".")).join("AppData").join("Local"));
+        local_app_data.join("Programs").join("appify").join("appify.exe")
+    }
+    #[cfg(not(windows))]
+    {
+        let home = dirs::home_dir().expect("Cannot resolve home directory");
+        home.join(".local/bin/appify")
+    }
+}
+
+fn copy_atomic(src: &Path, dst: &Path) -> std::io::Result<()> {
+    if let Some(parent) = dst.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    let pid = std::process::id();
+    let tmp_dst = dst.with_extension(format!("tmp.{}", pid));
+    fs::copy(src, &tmp_dst)?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        if let Ok(mut perms) = fs::metadata(&tmp_dst).map(|m| m.permissions()) {
+            perms.set_mode(0o755);
+            let _ = fs::set_permissions(&tmp_dst, perms);
+        }
+    }
+    fs::rename(&tmp_dst, dst)?;
+    Ok(())
+}
+
+fn is_dir_in_path(dir: &Path) -> bool {
+    if let Ok(path_var) = std::env::var("PATH") {
+        std::env::split_paths(&path_var).any(|p| {
+            if let (Ok(p1), Ok(p2)) = (fs::canonicalize(&p), fs::canonicalize(dir)) {
+                p1 == p2
+            } else {
+                p == dir
+            }
+        })
+    } else {
+        false
+    }
+}
+
+fn ensure_persistent_binary() -> PathBuf {
+    let current_exe = match std::env::current_exe() {
+        Ok(p) => p,
+        Err(_) => return PathBuf::from("appify"),
+    };
+
+    let persistent = get_persistent_bin_path();
+
+    let is_already_persistent = if let (Ok(curr_can), Ok(pers_can)) =
+        (fs::canonicalize(&current_exe), fs::canonicalize(&persistent))
+    {
+        curr_can == pers_can
+    } else {
+        current_exe == persistent
+    };
+
+    let is_system_bin = current_exe.starts_with("/usr/bin")
+        || current_exe.starts_with("/usr/local/bin")
+        || current_exe.starts_with("/opt");
+
+    if is_already_persistent || is_system_bin {
+        return current_exe;
+    }
+
+    println!(
+        "[*] Relocating binary to '{}' so desktop launchers remain permanent...",
+        persistent.display()
+    );
+    if let Err(e) = copy_atomic(&current_exe, &persistent) {
+        eprintln!(
+            "[!] Warning: Could not install binary to persistent location ({}). Using current executable.",
+            e
+        );
+        return current_exe;
+    }
+
+    if let Some(parent) = persistent.parent() {
+        if !is_dir_in_path(parent) {
+            println!("[!] Note: '{}' is not currently in your PATH.", parent.display());
+            #[cfg(unix)]
+            println!("    To run 'appify' from any terminal, add it to your shell profile:\n    echo 'export PATH=\"$HOME/.local/bin:$PATH\"' >> ~/.bashrc");
+            #[cfg(windows)]
+            println!("    To run 'appify' from any terminal, add '{}' to your User PATH.", parent.display());
+        }
+    }
+
+    persistent
+}
+
+fn execute_self_install() {
+    let persistent = ensure_persistent_binary();
+    println!("[+] Appify is installed at: {}", persistent.display());
+}
+
 fn execute_install(meta: AppMetadata) {
     let home = dirs::home_dir().expect("Cannot resolve home directory");
-    let bin_path = std::env::current_exe().expect("Failed to find current executable path");
+    let bin_path = ensure_persistent_binary();
 
     let apps_dir = home.join(".local/share/applications");
     let icons_dir = home.join(".local/share/icons");
@@ -411,6 +514,9 @@ fn main() {
         Commands::List => {
             execute_list();
         }
+        Commands::SelfInstall => {
+            execute_self_install();
+        }
     }
 }
 
@@ -510,5 +616,30 @@ mod tests {
         let meta1 = resolve_metadata("https://github.com", None, None, None).unwrap();
         let meta2 = resolve_metadata("github.com", None, None, None).unwrap();
         assert_eq!(meta1.hash, meta2.hash);
+    }
+
+    #[test]
+    fn test_persistent_bin_path() {
+        let path = get_persistent_bin_path();
+        #[cfg(unix)]
+        assert!(path.ends_with(".local/bin/appify"));
+        #[cfg(windows)]
+        assert!(path.ends_with("appify.exe"));
+    }
+
+    #[test]
+    fn test_copy_atomic() {
+        let temp_dir = std::env::temp_dir().join("appify_test_atomic");
+        let src = temp_dir.join("src_file.txt");
+        let dst = temp_dir.join("subdir").join("dst_file.txt");
+
+        fs::create_dir_all(&temp_dir).unwrap();
+        fs::write(&src, b"hello appify").unwrap();
+
+        copy_atomic(&src, &dst).unwrap();
+        assert!(dst.exists());
+        assert_eq!(fs::read(&dst).unwrap(), b"hello appify");
+
+        let _ = fs::remove_dir_all(&temp_dir);
     }
 }
