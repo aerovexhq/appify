@@ -23,10 +23,70 @@ in the app window.
 
 ---
 
-## Prerequisites
+## Installation
 
-You only need these if you're [building from source](#build-from-source). If you're using a prebuilt release
-binary, skip to [Usage](#usage).
+Appify is a single self-contained binary — no runtime dependencies to install once you have it in hand.
+Grab one from [Releases](../../releases) instead of building it yourself, unless you need a platform/
+architecture that isn't published there, in which case see [Build from source](#build-from-source).
+
+> Releases are published as **drafts** and reviewed before going live, so only published (non-draft)
+> releases on the Releases page are meant for general use.
+
+### Linux
+
+```bash
+# Download the release asset for your architecture, then:
+mkdir -p ~/.local/bin
+mv appify-linux-x86_64 ~/.local/bin/appify
+chmod +x ~/.local/bin/appify
+```
+
+`~/.local/bin` is part of the XDG base directory spec and is already on `PATH` by default on Ubuntu and most
+modern distros — no extra setup needed. If `appify` isn't found after this, add it yourself:
+
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### macOS
+
+```bash
+# Download the release asset for your chip (Apple Silicon or Intel), then:
+sudo mv appify-macos-<arch> /usr/local/bin/appify
+sudo chmod +x /usr/local/bin/appify
+```
+
+`/usr/local/bin` is a standard Unix location that's on `PATH` by default on macOS, with or without Homebrew.
+
+Because the binary isn't notarized by Apple, Gatekeeper will refuse to run it on first launch ("cannot be
+opened because the developer cannot be verified"). Clear the quarantine flag once, after copying it in:
+
+```bash
+xattr -d com.apple.quarantine /usr/local/bin/appify
+```
+
+### Windows
+
+1. Download the `.exe` release asset for your system.
+2. Create a folder to hold it, e.g. `%USERPROFILE%\bin`, and move the file there as `appify.exe`.
+3. Add that folder to your user `PATH` (one-time):
+   ```powershell
+   setx PATH "%PATH%;%USERPROFILE%\bin"
+   ```
+   Or via the GUI: **Settings → System → About → Advanced system settings → Environment Variables**, edit
+   the `Path` variable under "User variables", and add the folder.
+4. Open a **new** terminal window for the `PATH` change to take effect.
+
+Since the binary is unsigned, Windows SmartScreen may show a warning the first time you run it. Click
+**More info → Run anyway** to proceed.
+
+---
+
+## Build from source
+
+Build from source if you're on a platform/architecture without a published release, or want to build from a
+specific commit.
 
 ### 1. Rust toolchain
 
@@ -63,13 +123,7 @@ xcode-select --install
 Install the [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) via the
 Visual Studio Installer, selecting the "Desktop development with C++" workload.
 
-> **Note:** the current release targets Linux. The isolated webview and browsing logic build cleanly on macOS
-> and Windows too, but `install` only writes a Linux-style `.desktop` entry — see
-> [Platform support](#platform-support) below.
-
----
-
-## Build from source
+### 3. Build and install
 
 ```bash
 git clone https://github.com/<your-username>/appify.git
@@ -77,15 +131,11 @@ cd appify/src-tauri
 cargo build --release
 ```
 
-Install the resulting binary onto your `PATH`:
+Then place the resulting binary in the same location described in [Installation](#installation) for your OS
+(e.g. on Linux: `mkdir -p ~/.local/bin && cp target/release/appify ~/.local/bin/`).
 
-```bash
-mkdir -p ~/.local/bin
-cp target/release/appify ~/.local/bin/
-```
-
-Make sure `~/.local/bin` is on your `PATH` (add `export PATH="$HOME/.local/bin:$PATH"` to your shell profile
-if it isn't already).
+> **Note:** `install` currently generates a Linux-style `.desktop` entry only, regardless of what platform you
+> build on — see [Platform support](#platform-support).
 
 ---
 
