@@ -5,6 +5,10 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -47,8 +51,6 @@ jobs:
 
       - name: Rust build cache
         uses: swatinem/rust-cache@v2
-        with:
-          workspaces: "./src-tauri -> target"
 
       - name: Build and create draft release
         uses: tauri-apps/tauri-action@v0
@@ -60,4 +62,5 @@ jobs:
           releaseDraft: true      # <-- stays a draft until you publish it manually
           prerelease: false
           includeUpdaterJson: false  # no updater configured in tauri.conf.json, so don't expect .sig files
+          uploadPlainBinary: true
           args: ${{ matrix.args }}

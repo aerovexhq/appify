@@ -35,9 +35,9 @@ architecture that isn't published there, in which case see [Build from source](#
 ### Linux
 
 ```bash
-# Download the release asset for your architecture, then:
+# Download the release asset for your architecture (e.g. appify_linux_x64), then:
 mkdir -p ~/.local/bin
-mv appify-linux-x86_64 ~/.local/bin/appify
+mv appify_linux_x64 ~/.local/bin/appify
 chmod +x ~/.local/bin/appify
 ```
 
@@ -52,8 +52,10 @@ source ~/.bashrc
 ### macOS
 
 ```bash
-# Download the release asset for your chip (Apple Silicon or Intel), then:
-sudo mv appify-macos-<arch> /usr/local/bin/appify
+# Download the release asset for your chip:
+#   Apple Silicon: appify_macos_aarch64
+#   Intel:         appify_macos_x64
+sudo mv appify_macos_<arch> /usr/local/bin/appify
 sudo chmod +x /usr/local/bin/appify
 ```
 
@@ -68,7 +70,7 @@ xattr -d com.apple.quarantine /usr/local/bin/appify
 
 ### Windows
 
-1. Download the `.exe` release asset for your system.
+1. Download the `appify_windows_x64.exe` release asset for your system.
 2. Create a folder to hold it, e.g. `%USERPROFILE%\bin`, and move the file there as `appify.exe`.
 3. Add that folder to your user `PATH` (one-time):
    ```powershell
@@ -126,8 +128,8 @@ Visual Studio Installer, selecting the "Desktop development with C++" workload.
 ### 3. Build and install
 
 ```bash
-git clone https://github.com/<your-username>/appify.git
-cd appify/src-tauri
+git clone https://github.com/<your-username>/tauri-appify.git
+cd tauri-appify
 cargo build --release
 ```
 

@@ -8,7 +8,7 @@ use tauri_plugin_opener::OpenerExt;
 use url::Url;
 
 #[derive(Parser)]
-#[command(name = "appify", version = "1.0", about = "Convert web apps into isolated desktop apps", long_about = None)]
+#[command(name = "appify", version, about = "Convert web apps into isolated desktop apps", long_about = None)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -56,6 +56,7 @@ enum Commands {
     List,
 }
 
+#[derive(Debug, Clone)]
 struct AppMetadata {
     url: String,
     base_domain: String,
@@ -410,5 +411,104 @@ fn main() {
         Commands::List => {
             execute_list();
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_popular_aliases_exist() {
+        let aliases = get_popular_aliases();
+        assert!(aliases.contains_key("whatsapp"));
+        assert!(aliases.contains_key("discord"));
+        assert!(aliases.contains_key("telegram"));
+        assert!(aliases.contains_key("spotify"));
+        assert!(aliases.contains_key("netflix"));
+        assert!(aliases.contains_key("youtube"));
+        assert!(aliases.contains_key("twitter"));
+        assert!(aliases.contains_key("x"));
+        assert!(aliases.contains_key("reddit"));
+        assert!(aliases.contains_key("chatgpt"));
+        assert!(aliases.contains_key("notion"));
+        assert!(aliases.contains_key("figma"));
+        assert!(aliases.contains_key("gmail"));
+
+        for (alias, (url, name, wm)) in &aliases {
+            assert!(!alias.is_empty());
+            assert!(url.starts_with("https://"));
+            assert!(!name.is_empty());
+            assert!(!wm.is_empty());
+        }
+    }
+
+    #[test]
+    fn test_resolve_metadata_alias() {
+        let meta = resolve_metadata("whatsapp", None, None, None).unwrap();
+        assert_eq!(meta.url, "https://web.whatsapp.com");
+        assert_eq!(meta.name, "WhatsApp");
+        assert_eq!(meta.wm_class, "whatsapp-desktop");
+        assert_eq!(meta.base_domain, "whatsapp.com");
+        assert_eq!(meta.hash.len(), 64);
+    }
+
+    #[test]
+    fn test_resolve_metadata_case_insensitive_alias() {
+        let meta = resolve_metadata("  DISCORD  ", None, None, None).unwrap();
+        assert_eq!(meta.url, "https://discord.com/app");
+        assert_eq!(meta.name, "Discord");
+        assert_eq!(meta.wm_class, "discord-app");
+    }
+
+    #[test]
+    fn test_resolve_metadata_raw_url_no_scheme() {
+        let meta = resolve_metadata("github.com", None, None, None).unwrap();
+        assert_eq!(meta.url, "https://github.com");
+        assert_eq!(meta.name, "github.com");
+        assert_eq!(meta.base_domain, "github.com");
+        assert!(meta.wm_class.starts_with("appify-"));
+    }
+
+    #[test]
+    fn test_resolve_metadata_trailing_slash_stripped() {
+        let meta = resolve_metadata("https://example.org/", None, None, None).unwrap();
+        assert_eq!(meta.url, "https://example.org");
+    }
+
+    #[test]
+    fn test_resolve_metadata_custom_overrides() {
+        let meta = resolve_metadata(
+            "https://linear.app",
+            Some("Linear Work".to_string()),
+            Some("custom-linear".to_string()),
+            Some("/path/to/icon.png".to_string()),
+        )
+        .unwrap();
+
+        assert_eq!(meta.name, "Linear Work");
+        assert_eq!(meta.wm_class, "custom-linear");
+        assert_eq!(meta.custom_icon, Some("/path/to/icon.png".to_string()));
+    }
+
+    #[test]
+    fn test_resolve_metadata_localhost() {
+        let meta = resolve_metadata("http://localhost:3000", None, None, None).unwrap();
+        assert_eq!(meta.url, "http://localhost:3000");
+        assert_eq!(meta.base_domain, "localhost");
+    }
+
+    #[test]
+    fn test_resolve_metadata_invalid_domain() {
+        let res = resolve_metadata("notadomain", None, None, None);
+        assert!(res.is_err());
+        assert!(res.unwrap_err().contains("not appear to be a valid domain"));
+    }
+
+    #[test]
+    fn test_hash_consistency() {
+        let meta1 = resolve_metadata("https://github.com", None, None, None).unwrap();
+        let meta2 = resolve_metadata("github.com", None, None, None).unwrap();
+        assert_eq!(meta1.hash, meta2.hash);
     }
 }
