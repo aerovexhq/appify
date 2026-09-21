@@ -7,7 +7,7 @@ edition = "2021"
 tauri-build = { version = "2.0.0", features = [] }
 
 [dependencies]
-tauri = { version = "2.0.0", features = ["image-png"] }
+tauri = { version = "2.0.0", features = ["image-png", "tray-icon"] }
 tauri-plugin-opener = "2.0.0"
 clap = { version = "4.5", features = ["derive"] }
 sha2 = "0.10"

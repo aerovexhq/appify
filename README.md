@@ -157,22 +157,38 @@ Then place the resulting binary in the same location described in [Installation]
 ## Usage
 
 ```text
-appify install <URL or alias> [NAME] [--wm-class <CLASS>] [--icon <PATH_OR_URL>]
-appify run     <URL or alias> [NAME] [--wm-class <CLASS>] [--icon <PATH>]
+appify install <URL or alias> [NAME] [OPTIONS]
+appify run     <URL or alias> [NAME] [OPTIONS]
 appify uninstall <URL or alias>
 appify list
 appify self-install
 ```
 
-* `install` — writes a desktop launcher so the app is available from your app menu, and downloads/caches its icon. Automatically ensures `appify` is installed to `~/.local/bin/appify`.
+* `install` — writes a desktop launcher so the app is available from your app menu, and downloads/caches its icon. Persists any runtime options into the desktop launcher. Automatically ensures `appify` is installed to `~/.local/bin/appify`.
 * `run` — opens the app directly in an isolated window without touching your desktop launchers (useful for
   testing, or as the command the generated `.desktop` file itself calls).
 * `uninstall` — removes the launcher, icon, and cached session profile for a given app.
 * `list` — prints every app currently installed via Appify.
 * `self-install` — installs the `appify` binary itself to `~/.local/bin/appify` (or system PATH).
 
-`NAME`, `--wm-class`, and `--icon` are all optional — Appify fills in sensible defaults (see below) when
-they're omitted.
+### Options & Flags
+
+Both `install` and `run` accept the following customization options (when passed to `install`, they are automatically serialized into the `.desktop` launcher):
+
+| Option | Description |
+|---|---|
+| `--hide-on-close` | Closes hide the window to background instead of quitting (tray icon automatically enabled). |
+| `--single-instance` | Restricts to one running instance. Launching a duplicate unhides and focuses the existing window. |
+| `--tray` | Shows a system tray icon with Show/Hide, Reload, and Quit actions, plus click-to-toggle. |
+| `--start-hidden` | Starts minimized/hidden to background tray (ideal for autostart services). |
+| `--maximize` | Launches the app in a maximized window. |
+| `--zoom <ZOOM>` | Initial webview zoom scale factor (e.g. `1.1`, `0.9`). |
+| `--user-agent <UA>` | Custom browser User-Agent string. |
+| `--width <WIDTH>` | Initial window width in pixels. |
+| `--height <HEIGHT>` | Initial window height in pixels. |
+| `-a, --allow-domain <DOMAIN>` | Additional internal domains to keep in-app (e.g. `-a whatsapp.net`). Can be repeated. |
+| `--wm-class <CLASS>` | Custom window class / App ID for desktop grouping and dock matching. |
+| `--icon <PATH_OR_URL>` | Custom window and desktop launcher icon. |
 
 ### Installing an app
 
@@ -180,8 +196,11 @@ they're omitted.
 # Uses the built-in alias, default name "WhatsApp"
 appify install whatsapp
 
-# Override the display name
-appify install whatsapp "Work WhatsApp"
+# Complete messenger setup: single instance, tray icon, close to background
+appify install whatsapp --single-instance --hide-on-close --tray
+
+# Override display name and window size
+appify install discord "Discord" --single-instance --width 1280 --height 800
 
 # Full control: custom name, window class, and icon
 appify install https://mail.google.com "Gmail" --wm-class gmail-app --icon ./gmail.png

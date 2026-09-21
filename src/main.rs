@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::fs::{self, File};
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use tauri::Manager;
 use tauri_plugin_opener::OpenerExt;
 use url::Url;
 
@@ -35,6 +36,42 @@ enum Commands {
         /// Additional domains to keep inside the app (can be repeated, e.g. -a whatsapp.net)
         #[arg(short = 'a', long = "allow-domain")]
         allow_domain: Vec<String>,
+
+        /// Keep app running in background when window is closed
+        #[arg(long)]
+        hide_on_close: bool,
+
+        /// Enforce only one running instance of this app
+        #[arg(long)]
+        single_instance: bool,
+
+        /// Show system tray icon for managing show/hide and reload
+        #[arg(long)]
+        tray: bool,
+
+        /// Launch the window hidden in background / tray
+        #[arg(long)]
+        start_hidden: bool,
+
+        /// Launch the window maximized
+        #[arg(long)]
+        maximize: bool,
+
+        /// Initial zoom level (e.g. 1.0, 1.1, 0.9)
+        #[arg(long)]
+        zoom: Option<f64>,
+
+        /// Override browser User-Agent string
+        #[arg(long)]
+        user_agent: Option<String>,
+
+        /// Initial window width
+        #[arg(long)]
+        width: Option<f64>,
+
+        /// Initial window height
+        #[arg(long)]
+        height: Option<f64>,
     },
     /// Run an app directly in an isolated webview
     Run {
@@ -55,6 +92,42 @@ enum Commands {
         /// Additional domains to keep inside the app (can be repeated, e.g. -a whatsapp.net)
         #[arg(short = 'a', long = "allow-domain")]
         allow_domain: Vec<String>,
+
+        /// Keep app running in background when window is closed
+        #[arg(long)]
+        hide_on_close: bool,
+
+        /// Enforce only one running instance of this app
+        #[arg(long)]
+        single_instance: bool,
+
+        /// Show system tray icon for managing show/hide and reload
+        #[arg(long)]
+        tray: bool,
+
+        /// Launch the window hidden in background / tray
+        #[arg(long)]
+        start_hidden: bool,
+
+        /// Launch the window maximized
+        #[arg(long)]
+        maximize: bool,
+
+        /// Initial zoom level (e.g. 1.0, 1.1, 0.9)
+        #[arg(long)]
+        zoom: Option<f64>,
+
+        /// Override browser User-Agent string
+        #[arg(long)]
+        user_agent: Option<String>,
+
+        /// Initial window width
+        #[arg(long)]
+        width: Option<f64>,
+
+        /// Initial window height
+        #[arg(long)]
+        height: Option<f64>,
     },
     /// Uninstall an app by URL or alias
     Uninstall {
@@ -64,6 +137,23 @@ enum Commands {
     List,
     /// Install the appify binary itself to ~/.local/bin (or system PATH)
     SelfInstall,
+}
+
+#[derive(Debug, Clone, Default)]
+struct RunOptions {
+    custom_name: Option<String>,
+    custom_wm_class: Option<String>,
+    custom_icon: Option<String>,
+    cli_allowed_domains: Vec<String>,
+    hide_on_close: bool,
+    single_instance: bool,
+    tray: bool,
+    start_hidden: bool,
+    maximize: bool,
+    zoom: Option<f64>,
+    user_agent: Option<String>,
+    width: Option<f64>,
+    height: Option<f64>,
 }
 
 #[derive(Debug, Clone)]
@@ -76,6 +166,15 @@ struct AppMetadata {
     hash: String,
     allowed_domains: Vec<String>,
     custom_allowed_domains: Vec<String>,
+    hide_on_close: bool,
+    single_instance: bool,
+    tray: bool,
+    start_hidden: bool,
+    maximize: bool,
+    zoom: Option<f64>,
+    user_agent: Option<String>,
+    width: Option<f64>,
+    height: Option<f64>,
 }
 
 #[derive(Debug, Clone)]
@@ -414,10 +513,7 @@ fn is_internal_navigation(url: &Url, base_domain: &str, allowed_domains: &[Strin
 
 fn resolve_metadata(
     raw_input: &str,
-    custom_name: Option<String>,
-    custom_wm_class: Option<String>,
-    custom_icon: Option<String>,
-    cli_allowed_domains: Vec<String>,
+    opts: RunOptions,
 ) -> Result<AppMetadata, String> {
     let aliases = get_popular_aliases();
     let lower_input = raw_input.trim().to_lowercase();
@@ -460,8 +556,8 @@ fn resolve_metadata(
     hasher.update(raw_url.as_bytes());
     let hash = hex::encode(hasher.finalize());
 
-    let final_name = custom_name.or(default_name).unwrap_or_else(|| netloc.clone());
-    let final_wm = custom_wm_class
+    let final_name = opts.custom_name.or(default_name).unwrap_or_else(|| netloc.clone());
+    let final_wm = opts.custom_wm_class
         .or(default_wm)
         .unwrap_or_else(|| format!("appify-{}", &hash[..12]));
 
@@ -477,21 +573,31 @@ fn resolve_metadata(
     for d in COMMON_SSO_DOMAINS {
         allowed_set.insert(d.to_string());
     }
-    for d in &cli_allowed_domains {
+    for d in &opts.cli_allowed_domains {
         allowed_set.insert(d.trim().to_lowercase());
     }
 
     let allowed_domains: Vec<String> = allowed_set.into_iter().collect();
+    let tray = opts.tray || opts.hide_on_close || opts.start_hidden;
 
     Ok(AppMetadata {
         url: raw_url,
         base_domain,
         name: final_name,
         wm_class: final_wm,
-        custom_icon,
+        custom_icon: opts.custom_icon,
         hash,
         allowed_domains,
-        custom_allowed_domains: cli_allowed_domains,
+        custom_allowed_domains: opts.cli_allowed_domains,
+        hide_on_close: opts.hide_on_close,
+        single_instance: opts.single_instance,
+        tray,
+        start_hidden: opts.start_hidden,
+        maximize: opts.maximize,
+        zoom: opts.zoom,
+        user_agent: opts.user_agent,
+        width: opts.width,
+        height: opts.height,
     })
 }
 
@@ -539,18 +645,125 @@ fn fetch_icon(url_str: &str, icon_path: &Path) {
     }
 }
 
-// Zero-dependency C FFI call for Linux process name
+// Sets Linux process comm, GTK program name (for WM_CLASS), and desktop application name
 #[cfg(target_os = "linux")]
-fn set_linux_app_id(app_id: &str) {
+fn set_linux_app_id(wm_class: &str, app_name: &str) {
     use std::ffi::CString;
     extern "C" {
+        fn g_set_prgname(prgname: *const i8);
+        fn g_set_application_name(app_name: *const i8);
         fn prctl(option: i32, arg2: *const i8, arg3: u64, arg4: u64, arg5: u64) -> i32;
     }
     const PR_SET_NAME: i32 = 15;
 
-    if let Ok(c_str) = CString::new(app_id) {
+    if let Ok(c_str) = CString::new(wm_class) {
         unsafe {
+            g_set_prgname(c_str.as_ptr());
             prctl(PR_SET_NAME, c_str.as_ptr(), 0, 0, 0);
+        }
+    }
+    if let Ok(c_str) = CString::new(app_name) {
+        unsafe {
+            g_set_application_name(c_str.as_ptr());
+        }
+    }
+}
+
+#[cfg(unix)]
+mod single_instance {
+    use std::fs;
+    use std::io::{Read, Write};
+    use std::os::unix::net::{UnixListener, UnixStream};
+    use std::path::Path;
+    use tauri::{AppHandle, Manager};
+
+    pub fn notify_existing(socket_path: &Path) -> bool {
+        if let Ok(mut stream) = UnixStream::connect(socket_path) {
+            let _ = stream.write_all(b"focus");
+            return true;
+        }
+        false
+    }
+
+    pub fn start_listener(socket_path: &Path, handle: AppHandle) -> Option<UnixListener> {
+        let _ = fs::remove_file(socket_path);
+        match UnixListener::bind(socket_path) {
+            Ok(listener) => {
+                let listener_clone = listener.try_clone().ok();
+                if let Some(l) = listener_clone {
+                    std::thread::spawn(move || {
+                        for stream in l.incoming() {
+                            if let Ok(mut stream) = stream {
+                                let mut buf = [0u8; 16];
+                                if let Ok(n) = stream.read(&mut buf) {
+                                    if &buf[..n] == b"focus" {
+                                        if let Some(w) = handle.get_webview_window("main") {
+                                            let _ = w.show();
+                                            let _ = w.unminimize();
+                                            let _ = w.set_focus();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                Some(listener)
+            }
+            Err(_) => None,
+        }
+    }
+}
+
+#[cfg(not(unix))]
+mod single_instance {
+    use std::fs;
+    use std::io::{Read, Write};
+    use std::net::{TcpListener, TcpStream};
+    use std::path::Path;
+    use tauri::{AppHandle, Manager};
+
+    pub fn notify_existing(port_file: &Path) -> bool {
+        if let Ok(port_str) = fs::read_to_string(port_file) {
+            if let Ok(port) = port_str.trim().parse::<u16>() {
+                if let Ok(mut stream) = TcpStream::connect(("127.0.0.1", port)) {
+                    let _ = stream.write_all(b"focus");
+                    return true;
+                }
+            }
+        }
+        false
+    }
+
+    pub fn start_listener(port_file: &Path, handle: AppHandle) -> Option<TcpListener> {
+        let _ = fs::remove_file(port_file);
+        match TcpListener::bind("127.0.0.1:0") {
+            Ok(listener) => {
+                if let Ok(addr) = listener.local_addr() {
+                    let _ = fs::write(port_file, addr.port().to_string());
+                }
+                let listener_clone = listener.try_clone().ok();
+                if let Some(l) = listener_clone {
+                    std::thread::spawn(move || {
+                        for stream in l.incoming() {
+                            if let Ok(mut stream) = stream {
+                                let mut buf = [0u8; 16];
+                                if let Ok(n) = stream.read(&mut buf) {
+                                    if &buf[..n] == b"focus" {
+                                        if let Some(w) = handle.get_webview_window("main") {
+                                            let _ = w.show();
+                                            let _ = w.unminimize();
+                                            let _ = w.set_focus();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                Some(listener)
+            }
+            Err(_) => None,
         }
     }
 }
@@ -563,7 +776,7 @@ fn execute_run(meta: AppMetadata) {
 
     #[cfg(target_os = "linux")]
     {
-        set_linux_app_id(&meta.wm_class);
+        set_linux_app_id(&meta.wm_class, &meta.name);
     }
 
     let data_dir = dirs::data_local_dir()
@@ -574,9 +787,30 @@ fn execute_run(meta: AppMetadata) {
 
     fs::create_dir_all(&data_dir).ok();
 
+    if meta.single_instance {
+        #[cfg(unix)]
+        let lock_path = data_dir.join("instance.sock");
+        #[cfg(not(unix))]
+        let lock_path = data_dir.join("instance.port");
+
+        if single_instance::notify_existing(&lock_path) {
+            println!("[+] '{}' is already running. Focused existing window.", meta.name);
+            return;
+        }
+    }
+
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .setup(move |app| {
+            if meta.single_instance {
+                #[cfg(unix)]
+                let lock_path = data_dir.join("instance.sock");
+                #[cfg(not(unix))]
+                let lock_path = data_dir.join("instance.port");
+
+                let _listener = single_instance::start_listener(&lock_path, app.handle().clone());
+            }
+
             let handle_nav = app.handle().clone();
             let handle_new_win = app.handle().clone();
 
@@ -586,17 +820,27 @@ fn execute_run(meta: AppMetadata) {
             let base_domain_for_new_win = base_domain.clone();
             let allowed_domains_for_new_win = allowed_domains.clone();
 
+            let initial_width = meta.width.unwrap_or(1100.0);
+            let initial_height = meta.height.unwrap_or(800.0);
+            let start_visible = !meta.start_hidden;
+
             let mut builder = tauri::WebviewWindowBuilder::new(
                 app,
                 "main",
                 tauri::WebviewUrl::External(target_url),
             )
                 .title(&win_title)
-                .inner_size(1100.0, 800.0)
+                .inner_size(initial_width, initial_height)
                 .min_inner_size(800.0, 600.0)
                 .center()
+                .visible(start_visible)
+                .maximized(meta.maximize)
                 .data_directory(data_dir)
                 .initialization_script(NOTIFICATION_POLYFILL);
+
+            if let Some(ref ua) = meta.user_agent {
+                builder = builder.user_agent(ua);
+            }
 
             if let Some(ref icon_path_str) = meta.custom_icon {
                 let p = Path::new(icon_path_str);
@@ -609,7 +853,8 @@ fn execute_run(meta: AppMetadata) {
                 }
             }
 
-            builder
+            let win_title_for_doc = win_title.clone();
+            let window = builder
                 .on_navigation(move |nav_url| {
                     if is_internal_navigation(nav_url, &base_domain_for_nav, &allowed_domains_for_nav) {
                         true
@@ -627,7 +872,14 @@ fn execute_run(meta: AppMetadata) {
                     }
                 })
                 .on_document_title_changed(move |window, title| {
-                    let is_unread = title.starts_with('(') || title.contains("Unread") || title.contains("•");
+                    let effective_title = if title.trim().is_empty() {
+                        win_title_for_doc.as_str()
+                    } else {
+                        title.as_str()
+                    };
+                    let _ = window.set_title(effective_title);
+
+                    let is_unread = effective_title.starts_with('(') || effective_title.contains("Unread") || effective_title.contains("•");
                     if is_unread {
                         let _ = window.request_user_attention(Some(tauri::UserAttentionType::Informational));
                     } else {
@@ -661,6 +913,87 @@ fn execute_run(meta: AppMetadata) {
                     }
                 })
                 .build()?;
+
+            let _ = window.set_title(&win_title);
+
+            if let Some(zoom_val) = meta.zoom {
+                let _ = window.set_zoom(zoom_val);
+            }
+
+            if meta.hide_on_close {
+                let w_clone = window.clone();
+                window.on_window_event(move |event| {
+                    if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                        api.prevent_close();
+                        let _ = w_clone.hide();
+                    }
+                });
+            }
+
+            if meta.tray {
+                let icon_img = if let Some(ref icon_path_str) = meta.custom_icon {
+                    let p = Path::new(icon_path_str);
+                    if p.exists() {
+                        fs::read(p).ok().and_then(|b| tauri::image::Image::from_bytes(&b).ok())
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }.or_else(|| app.default_window_icon().cloned());
+
+                if let Some(tray_icon) = icon_img {
+                    let show_hide_item = tauri::menu::MenuItem::with_id(app, "toggle", "Show / Hide", true, None::<&str>)?;
+                    let reload_item = tauri::menu::MenuItem::with_id(app, "reload", "Reload", true, None::<&str>)?;
+                    let quit_item = tauri::menu::MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+                    let menu = tauri::menu::Menu::with_items(app, &[&show_hide_item, &reload_item, &quit_item])?;
+
+                    let _tray = tauri::tray::TrayIconBuilder::new()
+                        .icon(tray_icon)
+                        .tooltip(&win_title)
+                        .menu(&menu)
+                        .show_menu_on_left_click(false)
+                        .on_menu_event(move |app_handle, event| {
+                            match event.id.as_ref() {
+                                "toggle" => {
+                                    if let Some(w) = app_handle.get_webview_window("main") {
+                                        if w.is_visible().unwrap_or(false) {
+                                            let _ = w.hide();
+                                        } else {
+                                            let _ = w.show();
+                                            let _ = w.unminimize();
+                                            let _ = w.set_focus();
+                                        }
+                                    }
+                                }
+                                "reload" => {
+                                    if let Some(w) = app_handle.get_webview_window("main") {
+                                        let _ = w.reload();
+                                    }
+                                }
+                                "quit" => {
+                                    app_handle.exit(0);
+                                }
+                                _ => {}
+                            }
+                        })
+                        .on_tray_icon_event(|tray, event| {
+                            if let tauri::tray::TrayIconEvent::Click { button: tauri::tray::MouseButton::Left, button_state: tauri::tray::MouseButtonState::Up, .. } = event {
+                                let app = tray.app_handle();
+                                if let Some(w) = app.get_webview_window("main") {
+                                    if w.is_visible().unwrap_or(false) {
+                                        let _ = w.hide();
+                                    } else {
+                                        let _ = w.show();
+                                        let _ = w.unminimize();
+                                        let _ = w.set_focus();
+                                    }
+                                }
+                            }
+                        })
+                        .build(app)?;
+                }
+            }
 
             Ok(())
         })
@@ -793,13 +1126,40 @@ fn execute_install(meta: AppMetadata) {
         fetch_icon(&meta.url, &icon_path);
     }
 
-    let allow_flags = if !meta.custom_allowed_domains.is_empty() {
-        let flags: Vec<String> = meta
-            .custom_allowed_domains
-            .iter()
-            .map(|d| format!("--allow-domain \"{}\"", d))
-            .collect();
-        format!(" {}", flags.join(" "))
+    let mut extra_flags = Vec::new();
+    if meta.hide_on_close {
+        extra_flags.push("--hide-on-close".to_string());
+    }
+    if meta.single_instance {
+        extra_flags.push("--single-instance".to_string());
+    }
+    if meta.tray {
+        extra_flags.push("--tray".to_string());
+    }
+    if meta.start_hidden {
+        extra_flags.push("--start-hidden".to_string());
+    }
+    if meta.maximize {
+        extra_flags.push("--maximize".to_string());
+    }
+    if let Some(z) = meta.zoom {
+        extra_flags.push(format!("--zoom {}", z));
+    }
+    if let Some(ref ua) = meta.user_agent {
+        extra_flags.push(format!("--user-agent \"{}\"", ua));
+    }
+    if let Some(w) = meta.width {
+        extra_flags.push(format!("--width {}", w));
+    }
+    if let Some(h) = meta.height {
+        extra_flags.push(format!("--height {}", h));
+    }
+    for d in &meta.custom_allowed_domains {
+        extra_flags.push(format!("--allow-domain \"{}\"", d));
+    }
+
+    let extra_args = if !extra_flags.is_empty() {
+        format!(" {}", extra_flags.join(" "))
     } else {
         String::new()
     };
@@ -810,7 +1170,7 @@ fn execute_install(meta: AppMetadata) {
         Version=1.0\n\
         Type=Application\n\
         Name={name}\n\
-        Exec={bin} run \"{url}\" \"{name}\" --wm-class \"{wm_class}\" --icon \"{icon}\"{allow_flags}\n\
+        Exec={bin} run \"{url}\" \"{name}\" --wm-class \"{wm_class}\" --icon \"{icon}\"{extra_args}\n\
         Icon={icon}\n\
         Terminal=false\n\
         Categories=Network;WebBrowser;\n\
@@ -822,7 +1182,7 @@ fn execute_install(meta: AppMetadata) {
         url = meta.url,
         wm_class = meta.wm_class,
         icon = icon_path.display(),
-        allow_flags = allow_flags,
+        extra_args = extra_args,
         hash = meta.hash
     );
 
@@ -837,7 +1197,7 @@ fn execute_install(meta: AppMetadata) {
 }
 
 fn execute_uninstall(raw_url: &str) {
-    let meta = match resolve_metadata(raw_url, None, None, None, vec![]) {
+    let meta = match resolve_metadata(raw_url, RunOptions::default()) {
         Ok(m) => m,
         Err(e) => {
             eprintln!("[!] {}", e);
@@ -915,20 +1275,72 @@ fn main() {
             wm_class,
             icon,
             allow_domain,
-        } => match resolve_metadata(&url, name, wm_class, icon, allow_domain) {
-            Ok(meta) => execute_install(meta),
-            Err(e) => eprintln!("[!] Error: {}", e),
-        },
+            hide_on_close,
+            single_instance,
+            tray,
+            start_hidden,
+            maximize,
+            zoom,
+            user_agent,
+            width,
+            height,
+        } => {
+            let opts = RunOptions {
+                custom_name: name,
+                custom_wm_class: wm_class,
+                custom_icon: icon,
+                cli_allowed_domains: allow_domain,
+                hide_on_close,
+                single_instance,
+                tray,
+                start_hidden,
+                maximize,
+                zoom,
+                user_agent,
+                width,
+                height,
+            };
+            match resolve_metadata(&url, opts) {
+                Ok(meta) => execute_install(meta),
+                Err(e) => eprintln!("[!] Error: {}", e),
+            }
+        }
         Commands::Run {
             url,
             name,
             wm_class,
             icon,
             allow_domain,
-        } => match resolve_metadata(&url, name, wm_class, icon, allow_domain) {
-            Ok(meta) => execute_run(meta),
-            Err(e) => eprintln!("[!] Error: {}", e),
-        },
+            hide_on_close,
+            single_instance,
+            tray,
+            start_hidden,
+            maximize,
+            zoom,
+            user_agent,
+            width,
+            height,
+        } => {
+            let opts = RunOptions {
+                custom_name: name,
+                custom_wm_class: wm_class,
+                custom_icon: icon,
+                cli_allowed_domains: allow_domain,
+                hide_on_close,
+                single_instance,
+                tray,
+                start_hidden,
+                maximize,
+                zoom,
+                user_agent,
+                width,
+                height,
+            };
+            match resolve_metadata(&url, opts) {
+                Ok(meta) => execute_run(meta),
+                Err(e) => eprintln!("[!] Error: {}", e),
+            }
+        }
         Commands::Uninstall { url } => {
             execute_uninstall(&url);
         }
@@ -972,7 +1384,7 @@ mod tests {
 
     #[test]
     fn test_resolve_metadata_alias() {
-        let meta = resolve_metadata("whatsapp", None, None, None, vec![]).unwrap();
+        let meta = resolve_metadata("whatsapp", RunOptions::default()).unwrap();
         assert_eq!(meta.url, "https://web.whatsapp.com");
         assert_eq!(meta.name, "WhatsApp");
         assert_eq!(meta.wm_class, "whatsapp-desktop");
@@ -984,7 +1396,7 @@ mod tests {
 
     #[test]
     fn test_resolve_metadata_case_insensitive_alias() {
-        let meta = resolve_metadata("  DISCORD  ", None, None, None, vec![]).unwrap();
+        let meta = resolve_metadata("  DISCORD  ", RunOptions::default()).unwrap();
         assert_eq!(meta.url, "https://discord.com/app");
         assert_eq!(meta.name, "Discord");
         assert_eq!(meta.wm_class, "discord-app");
@@ -993,7 +1405,7 @@ mod tests {
 
     #[test]
     fn test_resolve_metadata_raw_url_no_scheme() {
-        let meta = resolve_metadata("github.com", None, None, None, vec![]).unwrap();
+        let meta = resolve_metadata("github.com", RunOptions::default()).unwrap();
         assert_eq!(meta.url, "https://github.com");
         assert_eq!(meta.name, "github.com");
         assert_eq!(meta.base_domain, "github.com");
@@ -1002,7 +1414,7 @@ mod tests {
 
     #[test]
     fn test_resolve_metadata_trailing_slash_stripped() {
-        let meta = resolve_metadata("https://example.org/", None, None, None, vec![]).unwrap();
+        let meta = resolve_metadata("https://example.org/", RunOptions::default()).unwrap();
         assert_eq!(meta.url, "https://example.org");
     }
 
@@ -1010,10 +1422,21 @@ mod tests {
     fn test_resolve_metadata_custom_overrides() {
         let meta = resolve_metadata(
             "https://linear.app",
-            Some("Linear Work".to_string()),
-            Some("custom-linear".to_string()),
-            Some("/path/to/icon.png".to_string()),
-            vec!["linear.com".to_string()],
+            RunOptions {
+                custom_name: Some("Linear Work".to_string()),
+                custom_wm_class: Some("custom-linear".to_string()),
+                custom_icon: Some("/path/to/icon.png".to_string()),
+                cli_allowed_domains: vec!["linear.com".to_string()],
+                hide_on_close: true,
+                single_instance: true,
+                tray: true,
+                start_hidden: false,
+                maximize: true,
+                zoom: Some(1.2),
+                user_agent: Some("CustomUA/1.0".to_string()),
+                width: Some(1280.0),
+                height: Some(900.0),
+            },
         )
         .unwrap();
 
@@ -1022,26 +1445,48 @@ mod tests {
         assert_eq!(meta.custom_icon, Some("/path/to/icon.png".to_string()));
         assert!(meta.allowed_domains.contains(&"linear.com".to_string()));
         assert_eq!(meta.custom_allowed_domains, vec!["linear.com".to_string()]);
+        assert!(meta.hide_on_close);
+        assert!(meta.single_instance);
+        assert!(meta.tray);
+        assert!(meta.maximize);
+        assert_eq!(meta.zoom, Some(1.2));
+        assert_eq!(meta.user_agent, Some("CustomUA/1.0".to_string()));
+        assert_eq!(meta.width, Some(1280.0));
+        assert_eq!(meta.height, Some(900.0));
+    }
+
+    #[test]
+    fn test_resolve_metadata_auto_enables_tray_on_hide_on_close() {
+        let meta = resolve_metadata(
+            "whatsapp",
+            RunOptions {
+                hide_on_close: true,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        assert!(meta.hide_on_close);
+        assert!(meta.tray);
     }
 
     #[test]
     fn test_resolve_metadata_localhost() {
-        let meta = resolve_metadata("http://localhost:3000", None, None, None, vec![]).unwrap();
+        let meta = resolve_metadata("http://localhost:3000", RunOptions::default()).unwrap();
         assert_eq!(meta.url, "http://localhost:3000");
         assert_eq!(meta.base_domain, "localhost");
     }
 
     #[test]
     fn test_resolve_metadata_invalid_domain() {
-        let res = resolve_metadata("notadomain", None, None, None, vec![]);
+        let res = resolve_metadata("notadomain", RunOptions::default());
         assert!(res.is_err());
         assert!(res.unwrap_err().contains("not appear to be a valid domain"));
     }
 
     #[test]
     fn test_hash_consistency() {
-        let meta1 = resolve_metadata("https://github.com", None, None, None, vec![]).unwrap();
-        let meta2 = resolve_metadata("github.com", None, None, None, vec![]).unwrap();
+        let meta1 = resolve_metadata("https://github.com", RunOptions::default()).unwrap();
+        let meta2 = resolve_metadata("github.com", RunOptions::default()).unwrap();
         assert_eq!(meta1.hash, meta2.hash);
     }
 
@@ -1067,7 +1512,6 @@ mod tests {
         ];
         let base = "whatsapp.com";
 
-        // Internal WhatsApp flows / cache URLs that previously leaked to default browser
         let url_flows = Url::parse("https://flows.whatsapp.net/flows/cache_management/").unwrap();
         assert!(is_internal_navigation(&url_flows, base, &allowed));
 
@@ -1077,11 +1521,9 @@ mod tests {
         let url_main = Url::parse("https://web.whatsapp.com").unwrap();
         assert!(is_internal_navigation(&url_main, base, &allowed));
 
-        // OAuth SSO
         let url_sso = Url::parse("https://accounts.google.com/o/oauth2/v2/auth?client_id=123").unwrap();
         assert!(is_internal_navigation(&url_sso, base, &allowed));
 
-        // External untrusted website
         let url_external = Url::parse("https://nytimes.com/article123").unwrap();
         assert!(!is_internal_navigation(&url_external, base, &allowed));
     }
