@@ -177,10 +177,12 @@ Both `install` and `run` accept the following customization options (when passed
 
 | Option | Description |
 |---|---|
+| `--autostart` | Starts the application automatically upon user login / system boot. |
+| `--autostart-hidden` | Starts the app on login directly in the background / system tray. Regular launcher clicks still open the window. |
 | `--hide-on-close` | Closes hide the window to background instead of quitting (tray icon automatically enabled). |
 | `--single-instance` | Restricts to one running instance. Launching a duplicate unhides and focuses the existing window. |
 | `--tray` | Shows a system tray icon with Show/Hide, Reload, and Quit actions, plus click-to-toggle. |
-| `--start-hidden` | Starts minimized/hidden to background tray (ideal for autostart services). |
+| `--start-hidden` | Starts minimized/hidden to background tray. |
 | `--maximize` | Launches the app in a maximized window. |
 | `--zoom <ZOOM>` | Initial webview zoom scale factor (e.g. `1.1`, `0.9`). |
 | `--user-agent <UA>` | Custom browser User-Agent string. |
@@ -196,8 +198,8 @@ Both `install` and `run` accept the following customization options (when passed
 # Uses the built-in alias, default name "WhatsApp"
 appify install whatsapp
 
-# Complete messenger setup: single instance, tray icon, close to background
-appify install whatsapp --single-instance --hide-on-close --tray
+# Complete messenger setup: autostarts silently into tray on boot, single instance, close hides to tray
+appify install whatsapp --single-instance --hide-on-close --autostart-hidden
 
 # Override display name and window size
 appify install discord "Discord" --single-instance --width 1280 --height 800

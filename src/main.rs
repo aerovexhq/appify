@@ -72,6 +72,14 @@ enum Commands {
         /// Initial window height
         #[arg(long)]
         height: Option<f64>,
+
+        /// Launch app automatically on user login
+        #[arg(long)]
+        autostart: bool,
+
+        /// Launch app automatically on user login in background/tray
+        #[arg(long)]
+        autostart_hidden: bool,
     },
     /// Run an app directly in an isolated webview
     Run {
@@ -154,6 +162,8 @@ struct RunOptions {
     user_agent: Option<String>,
     width: Option<f64>,
     height: Option<f64>,
+    autostart: bool,
+    autostart_hidden: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -175,6 +185,8 @@ struct AppMetadata {
     user_agent: Option<String>,
     width: Option<f64>,
     height: Option<f64>,
+    autostart: bool,
+    autostart_hidden: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -578,7 +590,9 @@ fn resolve_metadata(
     }
 
     let allowed_domains: Vec<String> = allowed_set.into_iter().collect();
-    let tray = opts.tray || opts.hide_on_close || opts.start_hidden;
+    let autostart_hidden = opts.autostart_hidden || (opts.autostart && opts.start_hidden);
+    let autostart = opts.autostart || autostart_hidden;
+    let tray = opts.tray || opts.hide_on_close || opts.start_hidden || autostart_hidden;
 
     Ok(AppMetadata {
         url: raw_url,
@@ -598,50 +612,133 @@ fn resolve_metadata(
         user_agent: opts.user_agent,
         width: opts.width,
         height: opts.height,
+        autostart,
+        autostart_hidden,
     })
+}
+
+static FALLBACK_ICON_BYTES: &[u8] = include_bytes!("default_icon.png");
+
+fn convert_to_png(bytes: &[u8]) -> Option<Vec<u8>> {
+    let dyn_img = image::load_from_memory(bytes).ok()?;
+    let mut png_buf = Vec::new();
+    dyn_img
+        .write_to(&mut std::io::Cursor::new(&mut png_buf), image::ImageFormat::Png)
+        .ok()?;
+    Some(png_buf)
 }
 
 fn fetch_icon(url_str: &str, icon_path: &Path) {
     let agent = ureq::AgentBuilder::new()
-        .timeout(std::time::Duration::from_secs(5))
+        .timeout(std::time::Duration::from_secs(7))
         .build();
 
-    let mut icon_url: Option<String> = None;
+    let mut candidate_urls: Vec<String> = Vec::new();
 
-    if let Ok(resp) = agent.get(url_str).call() {
-        if let Ok(body) = resp.into_string() {
-            let doc = scraper::Html::parse_document(&body);
-            let link_sel = scraper::Selector::parse("link[rel*='icon']").unwrap();
+    let html_body = if let Ok(resp) = agent
+        .get(url_str)
+        .set(
+            "User-Agent",
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        )
+        .set(
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        )
+        .call()
+    {
+        resp.into_string().ok()
+    } else {
+        std::process::Command::new("curl")
+            .arg("-s")
+            .arg("-L")
+            .arg("--max-time")
+            .arg("5")
+            .arg("-A")
+            .arg("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
+            .arg(url_str)
+            .output()
+            .ok()
+            .and_then(|out| {
+                if out.status.success() {
+                    String::from_utf8(out.stdout).ok()
+                } else {
+                    None
+                }
+            })
+    };
+
+    if let Some(body) = html_body {
+        let doc = scraper::Html::parse_document(&body);
+        let link_sel = scraper::Selector::parse(
+            "link[rel*='icon'], link[rel*='apple-touch-icon'], meta[property='og:image']",
+        )
+        .unwrap();
+
+            let mut apple_icons = Vec::new();
+            let mut other_icons = Vec::new();
 
             for el in doc.select(&link_sel) {
-                if let Some(href) = el.value().attr("href") {
-                    let rel = el.value().attr("rel").unwrap_or("").to_lowercase();
-                    if rel.contains("apple-touch-icon") {
-                        icon_url = Some(href.to_string());
+                let tag_name = el.value().name();
+                if tag_name == "link" {
+                    if let Some(href) = el.value().attr("href") {
+                        let rel = el.value().attr("rel").unwrap_or("").to_lowercase();
+                        if rel.contains("apple-touch-icon") {
+                            apple_icons.push(href.to_string());
+                        } else {
+                            other_icons.push(href.to_string());
+                        }
+                    }
+                } else if tag_name == "meta" {
+                    if let Some(content) = el.value().attr("content") {
+                        other_icons.push(content.to_string());
+                    }
+                }
+            }
+            candidate_urls.extend(apple_icons);
+            candidate_urls.extend(other_icons);
+        }
+
+    if let Ok(base) = Url::parse(url_str) {
+        if let Ok(fav) = base.join("/favicon.ico") {
+            candidate_urls.push(fav.to_string());
+        }
+    } else {
+        candidate_urls.push(format!("{}/favicon.ico", url_str));
+    }
+
+    let mut saved = false;
+    let base_url = Url::parse(url_str).ok();
+
+    for candidate in candidate_urls {
+        let full_url = if let Some(ref base) = base_url {
+            base.join(&candidate).map(|u| u.to_string()).unwrap_or(candidate)
+        } else {
+            candidate
+        };
+
+        if let Ok(resp) = agent
+            .get(&full_url)
+            .set(
+                "User-Agent",
+                "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            )
+            .call()
+        {
+            let mut bytes = Vec::new();
+            if resp.into_reader().read_to_end(&mut bytes).is_ok() && !bytes.is_empty() {
+                if let Some(png_bytes) = convert_to_png(&bytes) {
+                    if fs::write(icon_path, png_bytes).is_ok() {
+                        saved = true;
                         break;
-                    } else if icon_url.is_none() {
-                        icon_url = Some(href.to_string());
                     }
                 }
             }
         }
     }
 
-    let resolved_icon = if let Some(href) = icon_url {
-        if let Ok(base) = Url::parse(url_str) {
-            base.join(&href).map(|u| u.to_string()).unwrap_or_else(|_| format!("{}/favicon.ico", url_str))
-        } else {
-            format!("{}/favicon.ico", url_str)
-        }
-    } else {
-        format!("{}/favicon.ico", url_str)
-    };
-
-    if let Ok(resp) = agent.get(&resolved_icon).call() {
-        let mut bytes = Vec::new();
-        if resp.into_reader().read_to_end(&mut bytes).is_ok() {
-            let _ = fs::write(icon_path, bytes);
-        }
+    if !saved {
+        let _ = fs::write(icon_path, FALLBACK_ICON_BYTES);
     }
 }
 
@@ -669,6 +766,25 @@ fn set_linux_app_id(wm_class: &str, app_name: &str) {
     }
 }
 
+fn get_single_instance_lock_path(hash: &str) -> PathBuf {
+    #[cfg(unix)]
+    {
+        let prefix = if hash.len() >= 16 { &hash[..16] } else { hash };
+        dirs::runtime_dir()
+            .unwrap_or_else(|| PathBuf::from("/tmp"))
+            .join(format!("appify-{}.sock", prefix))
+    }
+    #[cfg(not(unix))]
+    {
+        dirs::data_local_dir()
+            .unwrap_or_else(|| PathBuf::from("."))
+            .join("appify")
+            .join("profiles")
+            .join(hash)
+            .join("instance.port")
+    }
+}
+
 #[cfg(unix)]
 mod single_instance {
     use std::fs;
@@ -685,32 +801,31 @@ mod single_instance {
         false
     }
 
-    pub fn start_listener(socket_path: &Path, handle: AppHandle) -> Option<UnixListener> {
+    pub fn start_listener(socket_path: &Path, handle: AppHandle) -> bool {
         let _ = fs::remove_file(socket_path);
         match UnixListener::bind(socket_path) {
             Ok(listener) => {
-                let listener_clone = listener.try_clone().ok();
-                if let Some(l) = listener_clone {
-                    std::thread::spawn(move || {
-                        for stream in l.incoming() {
-                            if let Ok(mut stream) = stream {
-                                let mut buf = [0u8; 16];
-                                if let Ok(n) = stream.read(&mut buf) {
-                                    if &buf[..n] == b"focus" {
-                                        if let Some(w) = handle.get_webview_window("main") {
-                                            let _ = w.show();
-                                            let _ = w.unminimize();
-                                            let _ = w.set_focus();
-                                        }
+                let socket_path_buf = socket_path.to_path_buf();
+                std::thread::spawn(move || {
+                    for stream in listener.incoming() {
+                        if let Ok(mut stream) = stream {
+                            let mut buf = [0u8; 16];
+                            if let Ok(n) = stream.read(&mut buf) {
+                                if &buf[..n] == b"focus" {
+                                    if let Some(w) = handle.get_webview_window("main") {
+                                        let _ = w.show();
+                                        let _ = w.unminimize();
+                                        let _ = w.set_focus();
                                     }
                                 }
                             }
                         }
-                    });
-                }
-                Some(listener)
+                    }
+                    let _ = fs::remove_file(&socket_path_buf);
+                });
+                true
             }
-            Err(_) => None,
+            Err(_) => false,
         }
     }
 }
@@ -735,17 +850,14 @@ mod single_instance {
         false
     }
 
-    pub fn start_listener(port_file: &Path, handle: AppHandle) -> Option<TcpListener> {
-        let _ = fs::remove_file(port_file);
+    pub fn start_listener(port_file: &Path, handle: AppHandle) -> bool {
         match TcpListener::bind("127.0.0.1:0") {
             Ok(listener) => {
                 if let Ok(addr) = listener.local_addr() {
                     let _ = fs::write(port_file, addr.port().to_string());
-                }
-                let listener_clone = listener.try_clone().ok();
-                if let Some(l) = listener_clone {
+                    let port_file_buf = port_file.to_path_buf();
                     std::thread::spawn(move || {
-                        for stream in l.incoming() {
+                        for stream in listener.incoming() {
                             if let Ok(mut stream) = stream {
                                 let mut buf = [0u8; 16];
                                 if let Ok(n) = stream.read(&mut buf) {
@@ -759,11 +871,14 @@ mod single_instance {
                                 }
                             }
                         }
+                        let _ = fs::remove_file(&port_file_buf);
                     });
+                    true
+                } else {
+                    false
                 }
-                Some(listener)
             }
-            Err(_) => None,
+            Err(_) => false,
         }
     }
 }
@@ -788,10 +903,7 @@ fn execute_run(meta: AppMetadata) {
     fs::create_dir_all(&data_dir).ok();
 
     if meta.single_instance {
-        #[cfg(unix)]
-        let lock_path = data_dir.join("instance.sock");
-        #[cfg(not(unix))]
-        let lock_path = data_dir.join("instance.port");
+        let lock_path = get_single_instance_lock_path(&meta.hash);
 
         if single_instance::notify_existing(&lock_path) {
             println!("[+] '{}' is already running. Focused existing window.", meta.name);
@@ -803,12 +915,8 @@ fn execute_run(meta: AppMetadata) {
         .plugin(tauri_plugin_opener::init())
         .setup(move |app| {
             if meta.single_instance {
-                #[cfg(unix)]
-                let lock_path = data_dir.join("instance.sock");
-                #[cfg(not(unix))]
-                let lock_path = data_dir.join("instance.port");
-
-                let _listener = single_instance::start_listener(&lock_path, app.handle().clone());
+                let lock_path = get_single_instance_lock_path(&meta.hash);
+                let _ = single_instance::start_listener(&lock_path, app.handle().clone());
             }
 
             let handle_nav = app.handle().clone();
@@ -930,18 +1038,28 @@ fn execute_run(meta: AppMetadata) {
                 });
             }
 
-            if meta.tray {
-                let icon_img = if let Some(ref icon_path_str) = meta.custom_icon {
-                    let p = Path::new(icon_path_str);
-                    if p.exists() {
-                        fs::read(p).ok().and_then(|b| tauri::image::Image::from_bytes(&b).ok())
-                    } else {
-                        None
-                    }
+            let icon_img = if let Some(ref icon_path_str) = meta.custom_icon {
+                let p = Path::new(icon_path_str);
+                if p.exists() {
+                    fs::read(p).ok().and_then(|b| {
+                        tauri::image::Image::from_bytes(&b).ok().or_else(|| {
+                            convert_to_png(&b).and_then(|png| tauri::image::Image::from_bytes(&png).ok())
+                        })
+                    })
                 } else {
                     None
-                }.or_else(|| app.default_window_icon().cloned());
+                }
+            } else {
+                None
+            }
+            .or_else(|| app.default_window_icon().cloned())
+            .or_else(|| tauri::image::Image::from_bytes(FALLBACK_ICON_BYTES).ok());
 
+            if let Some(ref icon) = icon_img {
+                let _ = window.set_icon(icon.clone());
+            }
+
+            if meta.tray {
                 if let Some(tray_icon) = icon_img {
                     let show_hide_item = tauri::menu::MenuItem::with_id(app, "toggle", "Show / Hide", true, None::<&str>)?;
                     let reload_item = tauri::menu::MenuItem::with_id(app, "reload", "Reload", true, None::<&str>)?;
@@ -1102,6 +1220,259 @@ fn execute_self_install() {
     println!("[+] Appify is installed at: {}", persistent.display());
 }
 
+fn install_autostart(
+    meta: &AppMetadata,
+    bin_path: &Path,
+    icon_path: &Path,
+    is_hidden: bool,
+) -> Result<PathBuf, String> {
+    let mut flags = Vec::new();
+    if meta.hide_on_close {
+        flags.push("--hide-on-close".to_string());
+    }
+    if meta.single_instance {
+        flags.push("--single-instance".to_string());
+    }
+    if meta.tray || is_hidden {
+        flags.push("--tray".to_string());
+    }
+    if is_hidden {
+        flags.push("--start-hidden".to_string());
+    }
+    if meta.maximize {
+        flags.push("--maximize".to_string());
+    }
+    if let Some(z) = meta.zoom {
+        flags.push(format!("--zoom {}", z));
+    }
+    if let Some(ref ua) = meta.user_agent {
+        flags.push(format!("--user-agent \"{}\"", ua));
+    }
+    if let Some(w) = meta.width {
+        flags.push(format!("--width {}", w));
+    }
+    if let Some(h) = meta.height {
+        flags.push(format!("--height {}", h));
+    }
+    for d in &meta.custom_allowed_domains {
+        flags.push(format!("--allow-domain \"{}\"", d));
+    }
+
+    let extra_args = if !flags.is_empty() {
+        format!(" {}", flags.join(" "))
+    } else {
+        String::new()
+    };
+
+    #[cfg(target_os = "linux")]
+    {
+        let config_dir = dirs::config_dir()
+            .or_else(|| dirs::home_dir().map(|h| h.join(".config")))
+            .ok_or("Cannot find config directory")?;
+        let autostart_dir = config_dir.join("autostart");
+        fs::create_dir_all(&autostart_dir).map_err(|e| e.to_string())?;
+        let target_file = autostart_dir.join(format!("appify-{}.desktop", &meta.hash));
+
+        let content = format!(
+            "[Desktop Entry]\n\
+            Version=1.0\n\
+            Type=Application\n\
+            Name={name}\n\
+            Exec={bin} run \"{url}\" \"{name}\" --wm-class \"{wm_class}\" --icon \"{icon}\"{extra_args}\n\
+            Icon={icon}\n\
+            Terminal=false\n\
+            Categories=Network;\n\
+            StartupWMClass={wm_class}\n\
+            X-GNOME-Autostart-enabled=true\n\
+            X-Appify-URL={url}\n\
+            X-Appify-Hash={hash}\n\
+            X-Appify-Autostart=true\n",
+            name = meta.name,
+            bin = bin_path.display(),
+            url = meta.url,
+            wm_class = meta.wm_class,
+            icon = icon_path.display(),
+            extra_args = extra_args,
+            hash = meta.hash
+        );
+        fs::write(&target_file, content).map_err(|e| e.to_string())?;
+        Ok(target_file)
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        let home = dirs::home_dir().ok_or("Cannot find home directory")?;
+        let agents_dir = home.join("Library/LaunchAgents");
+        fs::create_dir_all(&agents_dir).map_err(|e| e.to_string())?;
+        let target_file = agents_dir.join(format!("com.appify.{}.plist", &meta.hash));
+
+        let mut xml_args = format!(
+            "        <string>{}</string>\n        <string>run</string>\n        <string>{}</string>\n        <string>{}</string>\n        <string>--wm-class</string>\n        <string>{}</string>\n        <string>--icon</string>\n        <string>{}</string>\n",
+            bin_path.display(),
+            meta.url,
+            meta.name,
+            meta.wm_class,
+            icon_path.display()
+        );
+        for flag in &flags {
+            if let Some((f, val)) = flag.split_once(' ') {
+                let clean_val = val.trim_matches('"');
+                xml_args.push_str(&format!(
+                    "        <string>{}</string>\n        <string>{}</string>\n",
+                    f, clean_val
+                ));
+            } else {
+                xml_args.push_str(&format!("        <string>{}</string>\n", flag));
+            }
+        }
+
+        let content = format!(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\
+            <!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n\
+            <plist version=\"1.0\">\n\
+            <dict>\n\
+                <key>Label</key>\n\
+                <string>com.appify.{hash}</string>\n\
+                <key>ProgramArguments</key>\n\
+                <array>\n\
+            {args}\
+                </array>\n\
+                <key>RunAtLoad</key>\n\
+                <true/>\n\
+                <key>ProcessType</key>\n\
+                <string>Interactive</string>\n\
+            </dict>\n\
+            </plist>\n",
+            hash = meta.hash,
+            args = xml_args
+        );
+        fs::write(&target_file, content).map_err(|e| e.to_string())?;
+        Ok(target_file)
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        let appdata = dirs::config_dir().ok_or("Cannot find APPDATA directory")?;
+        let startup_dir = appdata.join("Microsoft/Windows/Start Menu/Programs/Startup");
+        fs::create_dir_all(&startup_dir).map_err(|e| e.to_string())?;
+        let target_file = startup_dir.join(format!("appify-{}.vbs", &meta.hash));
+
+        let full_cmd = format!(
+            "\"{}\" run \"{}\" \"{}\" --wm-class \"{}\" --icon \"{}\"{}",
+            bin_path.display(),
+            meta.url,
+            meta.name,
+            meta.wm_class,
+            icon_path.display(),
+            extra_args
+        );
+        let escaped_cmd = full_cmd.replace('"', "\"\"");
+        let content = format!(
+            "Set WshShell = CreateObject(\"WScript.Shell\")\r\n\
+            WshShell.Run \"{escaped}\", 0, False\r\n",
+            escaped = escaped_cmd
+        );
+        fs::write(&target_file, content).map_err(|e| e.to_string())?;
+        Ok(target_file)
+    }
+
+    #[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "windows")))]
+    {
+        Err("Autostart is not supported on this operating system".to_string())
+    }
+}
+
+fn remove_autostart(hash: &str) -> bool {
+    let mut removed = false;
+    #[cfg(target_os = "linux")]
+    {
+        if let Some(config_dir) = dirs::config_dir().or_else(|| dirs::home_dir().map(|h| h.join(".config"))) {
+            let p = config_dir.join("autostart").join(format!("appify-{}.desktop", hash));
+            if p.exists() {
+                let _ = fs::remove_file(&p);
+                removed = true;
+            }
+        }
+    }
+    #[cfg(target_os = "macos")]
+    {
+        if let Some(home) = dirs::home_dir() {
+            let p = home.join("Library/LaunchAgents").join(format!("com.appify.{}.plist", hash));
+            if p.exists() {
+                let _ = std::process::Command::new("launchctl")
+                    .arg("unload")
+                    .arg(&p)
+                    .output();
+                let _ = fs::remove_file(&p);
+                removed = true;
+            }
+        }
+    }
+    #[cfg(target_os = "windows")]
+    {
+        if let Some(appdata) = dirs::config_dir() {
+            let startup_dir = appdata.join("Microsoft/Windows/Start Menu/Programs/Startup");
+            let vbs = startup_dir.join(format!("appify-{}.vbs", hash));
+            let bat = startup_dir.join(format!("appify-{}.bat", hash));
+            if vbs.exists() {
+                let _ = fs::remove_file(&vbs);
+                removed = true;
+            }
+            if bat.exists() {
+                let _ = fs::remove_file(&bat);
+                removed = true;
+            }
+        }
+    }
+    removed
+}
+
+fn get_autostart_status(hash: &str) -> &'static str {
+    #[cfg(target_os = "linux")]
+    {
+        if let Some(config_dir) = dirs::config_dir().or_else(|| dirs::home_dir().map(|h| h.join(".config"))) {
+            let p = config_dir.join("autostart").join(format!("appify-{}.desktop", hash));
+            if p.exists() {
+                if let Ok(c) = fs::read_to_string(&p) {
+                    if c.contains("--start-hidden") {
+                        return "Enabled (Tray)";
+                    }
+                }
+                return "Enabled";
+            }
+        }
+    }
+    #[cfg(target_os = "macos")]
+    {
+        if let Some(home) = dirs::home_dir() {
+            let p = home.join("Library/LaunchAgents").join(format!("com.appify.{}.plist", hash));
+            if p.exists() {
+                if let Ok(c) = fs::read_to_string(&p) {
+                    if c.contains("<string>--start-hidden</string>") {
+                        return "Enabled (Tray)";
+                    }
+                }
+                return "Enabled";
+            }
+        }
+    }
+    #[cfg(target_os = "windows")]
+    {
+        if let Some(appdata) = dirs::config_dir() {
+            let vbs = appdata.join("Microsoft/Windows/Start Menu/Programs/Startup").join(format!("appify-{}.vbs", hash));
+            if vbs.exists() {
+                if let Ok(c) = fs::read_to_string(&vbs) {
+                    if c.contains("--start-hidden") {
+                        return "Enabled (Tray)";
+                    }
+                }
+                return "Enabled";
+            }
+        }
+    }
+    "Disabled"
+}
+
 fn execute_install(meta: AppMetadata) {
     let home = dirs::home_dir().expect("Cannot resolve home directory");
     let bin_path = ensure_persistent_binary();
@@ -1116,7 +1487,13 @@ fn execute_install(meta: AppMetadata) {
     if let Some(ref custom) = meta.custom_icon {
         let p = Path::new(custom);
         if p.exists() {
-            fs::copy(p, &icon_path).ok();
+            if let Ok(bytes) = fs::read(p) {
+                if let Some(png) = convert_to_png(&bytes) {
+                    fs::write(&icon_path, png).ok();
+                } else {
+                    fs::copy(p, &icon_path).ok();
+                }
+            }
         } else if custom.starts_with("http://") || custom.starts_with("https://") {
             println!("[*] Downloading provided icon URL...");
             fetch_icon(custom, &icon_path);
@@ -1136,7 +1513,7 @@ fn execute_install(meta: AppMetadata) {
     if meta.tray {
         extra_flags.push("--tray".to_string());
     }
-    if meta.start_hidden {
+    if meta.start_hidden && !meta.autostart && !meta.autostart_hidden {
         extra_flags.push("--start-hidden".to_string());
     }
     if meta.maximize {
@@ -1189,11 +1566,28 @@ fn execute_install(meta: AppMetadata) {
     let mut file = File::create(&desktop_path).expect("Failed to write desktop file");
     file.write_all(desktop_content.as_bytes()).unwrap();
 
+    let autostart_msg = if meta.autostart || meta.autostart_hidden {
+        match install_autostart(&meta, &bin_path, &icon_path, meta.autostart_hidden) {
+            Ok(p) => {
+                let label = if meta.autostart_hidden {
+                    "Enabled (Hidden in tray on boot)"
+                } else {
+                    "Enabled (Visible on boot)"
+                };
+                format!("{} [{}]", label, p.display())
+            }
+            Err(e) => format!("Failed to register ({})", e),
+        }
+    } else {
+        "Disabled".to_string()
+    };
+
     println!("[+] Successfully installed '{}'!", meta.name);
-    println!("    URL:      {}", meta.url);
-    println!("    WM_CLASS: {}", meta.wm_class);
-    println!("    Icon:     {}", icon_path.display());
-    println!("    Desktop:  {}", desktop_path.display());
+    println!("    URL:       {}", meta.url);
+    println!("    WM_CLASS:  {}", meta.wm_class);
+    println!("    Icon:      {}", icon_path.display());
+    println!("    Desktop:   {}", desktop_path.display());
+    println!("    Autostart: {}", autostart_msg);
 }
 
 fn execute_uninstall(raw_url: &str) {
@@ -1226,6 +1620,10 @@ fn execute_uninstall(raw_url: &str) {
         println!("[*] Removed isolated session cache.");
         removed = true;
     }
+    if remove_autostart(&meta.hash) {
+        println!("[*] Removed autostart entry.");
+        removed = true;
+    }
 
     if removed {
         println!("[+] Successfully uninstalled '{}'", meta.name);
@@ -1238,29 +1636,49 @@ fn execute_list() {
     let home = dirs::home_dir().unwrap();
     let apps_dir = home.join(".local/share/applications");
 
-    println!("{:<25} | {:<20} | {}", "App Name", "WM_CLASS", "URL");
-    println!("{}", "-".repeat(75));
+    println!(
+        "{:<22} | {:<18} | {:<15} | {}",
+        "App Name", "WM_CLASS", "Autostart", "URL"
+    );
+    println!("{}", "-".repeat(85));
 
     if let Ok(entries) = fs::read_dir(apps_dir) {
+        let mut apps = Vec::new();
         for entry in entries.flatten() {
             let path = entry.path();
-            if path.file_name().and_then(|s| s.to_str()).map_or(false, |s| s.starts_with("appify-") && s.ends_with(".desktop")) {
+            if path
+                .file_name()
+                .and_then(|s| s.to_str())
+                .map_or(false, |s| s.starts_with("appify-") && s.ends_with(".desktop"))
+            {
                 if let Ok(content) = fs::read_to_string(&path) {
                     let mut name = String::new();
                     let mut wm = String::new();
                     let mut url = String::new();
+                    let mut hash = String::new();
 
                     for line in content.lines() {
-                        if let Some(val) = line.strip_prefix("Name=") { name = val.to_string(); }
-                        else if let Some(val) = line.strip_prefix("StartupWMClass=") { wm = val.to_string(); }
-                        else if let Some(val) = line.strip_prefix("X-Appify-URL=") { url = val.to_string(); }
+                        if let Some(val) = line.strip_prefix("Name=") {
+                            name = val.to_string();
+                        } else if let Some(val) = line.strip_prefix("StartupWMClass=") {
+                            wm = val.to_string();
+                        } else if let Some(val) = line.strip_prefix("X-Appify-URL=") {
+                            url = val.to_string();
+                        } else if let Some(val) = line.strip_prefix("X-Appify-Hash=") {
+                            hash = val.to_string();
+                        }
                     }
 
                     if !url.is_empty() {
-                        println!("{:<25} | {:<20} | {}", name, wm, url);
+                        let autostart_str = get_autostart_status(&hash);
+                        apps.push((name, wm, autostart_str, url));
                     }
                 }
             }
+        }
+        apps.sort_by(|a, b| a.0.cmp(&b.0));
+        for (name, wm, autostart, url) in apps {
+            println!("{:<22} | {:<18} | {:<15} | {}", name, wm, autostart, url);
         }
     }
 }
@@ -1284,6 +1702,8 @@ fn main() {
             user_agent,
             width,
             height,
+            autostart,
+            autostart_hidden,
         } => {
             let opts = RunOptions {
                 custom_name: name,
@@ -1299,6 +1719,8 @@ fn main() {
                 user_agent,
                 width,
                 height,
+                autostart,
+                autostart_hidden,
             };
             match resolve_metadata(&url, opts) {
                 Ok(meta) => execute_install(meta),
@@ -1335,6 +1757,8 @@ fn main() {
                 user_agent,
                 width,
                 height,
+                autostart: false,
+                autostart_hidden: false,
             };
             match resolve_metadata(&url, opts) {
                 Ok(meta) => execute_run(meta),
@@ -1436,6 +1860,8 @@ mod tests {
                 user_agent: Some("CustomUA/1.0".to_string()),
                 width: Some(1280.0),
                 height: Some(900.0),
+                autostart: false,
+                autostart_hidden: false,
             },
         )
         .unwrap();
@@ -1567,4 +1993,44 @@ mod tests {
 
         let _ = fs::remove_dir_all(&temp_dir);
     }
+
+    #[test]
+    fn test_convert_to_png_with_fallback() {
+        let converted = convert_to_png(FALLBACK_ICON_BYTES);
+        assert!(converted.is_some());
+        let png = converted.unwrap();
+        assert!(png.starts_with(b"\x89PNG\r\n\x1a\n"));
+    }
+
+    #[test]
+    fn test_resolve_metadata_autostart_hidden() {
+        let meta = resolve_metadata(
+            "whatsapp",
+            RunOptions {
+                autostart_hidden: true,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        assert!(meta.autostart);
+        assert!(meta.autostart_hidden);
+        assert!(meta.tray);
+    }
+
+    #[test]
+    fn test_resolve_metadata_autostart_with_start_hidden() {
+        let meta = resolve_metadata(
+            "whatsapp",
+            RunOptions {
+                autostart: true,
+                start_hidden: true,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        assert!(meta.autostart);
+        assert!(meta.autostart_hidden);
+        assert!(meta.tray);
+    }
 }
+

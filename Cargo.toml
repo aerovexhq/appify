@@ -16,3 +16,4 @@ url = "2.5"
 ureq = "2.9"
 scraper = "0.19"
 dirs = "5.0"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp", "ico"] }
