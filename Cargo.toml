@@ -17,3 +17,6 @@ ureq = "2.9"
 scraper = "0.19"
 dirs = "5.0"
 image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp", "ico"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+webkit2gtk = { version = "2.0", features = ["v2_36"] }

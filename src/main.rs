@@ -443,41 +443,111 @@ const COMMON_SSO_DOMAINS: &[&str] = &[
     "login.live.com",
 ];
 
-const NOTIFICATION_POLYFILL: &str = r#"
+const BROWSER_INTEGRATION_SCRIPT: &str = r#"
 (function() {
-    if (typeof window.Notification === 'undefined' || window.Notification.permission !== 'granted') {
-        function AppifyNotification(title, options) {
-            this.title = title;
-            this.options = options || {};
-            this.onclick = null;
-            this.onclose = null;
-            this.onerror = null;
-            this.onshow = null;
+    // 1. Notification API polyfill
+    try {
+        if (typeof window.Notification === 'undefined' || window.Notification.permission !== 'granted') {
+            function AppifyNotification(title, options) {
+                this.title = title;
+                this.options = options || {};
+                this.onclick = null;
+                this.onclose = null;
+                this.onerror = null;
+                this.onshow = null;
+            }
+            AppifyNotification.permission = 'granted';
+            AppifyNotification.requestPermission = function(cb) {
+                var promise = Promise.resolve('granted');
+                if (typeof cb === 'function') {
+                    promise.then(cb);
+                }
+                return promise;
+            };
+            AppifyNotification.prototype.close = function() {
+                if (typeof this.onclose === 'function') {
+                    this.onclose();
+                }
+            };
+            AppifyNotification.prototype.addEventListener = function(type, listener) {
+                this['on' + type] = listener;
+            };
+            AppifyNotification.prototype.removeEventListener = function(type) {
+                this['on' + type] = null;
+            };
+            AppifyNotification.prototype.dispatchEvent = function() {
+                return true;
+            };
+            window.Notification = AppifyNotification;
         }
-        AppifyNotification.permission = 'granted';
-        AppifyNotification.requestPermission = function(cb) {
-            var promise = Promise.resolve('granted');
-            if (typeof cb === 'function') {
-                promise.then(cb);
+    } catch (e) {}
+
+    // 2. Permissions API polyfill / interceptor (auto-grant clipboard, mic, camera, notifications)
+    try {
+        if (!navigator.permissions) {
+            navigator.permissions = {};
+        }
+        var origQuery = navigator.permissions.query ? navigator.permissions.query.bind(navigator.permissions) : null;
+        navigator.permissions.query = function(desc) {
+            var autoAllow = [
+                'clipboard-read',
+                'clipboard-write',
+                'notifications',
+                'microphone',
+                'camera',
+                'persistent-storage'
+            ];
+            var name = desc && desc.name ? desc.name : '';
+            if (autoAllow.indexOf(name) !== -1) {
+                return Promise.resolve({
+                    state: 'granted',
+                    name: name,
+                    onchange: null,
+                    addEventListener: function() {},
+                    removeEventListener: function() {},
+                    dispatchEvent: function() { return true; }
+                });
             }
-            return promise;
-        };
-        AppifyNotification.prototype.close = function() {
-            if (typeof this.onclose === 'function') {
-                this.onclose();
+            if (origQuery) {
+                return origQuery(desc).catch(function() {
+                    return {
+                        state: 'granted',
+                        name: name || 'unknown',
+                        onchange: null,
+                        addEventListener: function() {},
+                        removeEventListener: function() {},
+                        dispatchEvent: function() { return true; }
+                    };
+                });
             }
+            return Promise.resolve({
+                state: 'granted',
+                name: name || 'unknown',
+                onchange: null,
+                addEventListener: function() {},
+                removeEventListener: function() {},
+                dispatchEvent: function() { return true; }
+            });
         };
-        AppifyNotification.prototype.addEventListener = function(type, listener) {
-            this['on' + type] = listener;
-        };
-        AppifyNotification.prototype.removeEventListener = function(type) {
-            this['on' + type] = null;
-        };
-        AppifyNotification.prototype.dispatchEvent = function() {
-            return true;
-        };
-        window.Notification = AppifyNotification;
-    }
+    } catch (e) {}
+
+    // 3. Fallback for navigator.clipboard.read if missing
+    try {
+        if (navigator.clipboard && !navigator.clipboard.read) {
+            navigator.clipboard.read = function() {
+                if (navigator.clipboard.readText) {
+                    return navigator.clipboard.readText().then(function(text) {
+                        if (typeof ClipboardItem !== 'undefined') {
+                            var blob = new Blob([text], { type: 'text/plain' });
+                            return [new ClipboardItem({ 'text/plain': blob })];
+                        }
+                        return [];
+                    });
+                }
+                return Promise.resolve([]);
+            };
+        }
+    } catch (e) {}
 })();
 "#;
 
@@ -944,7 +1014,9 @@ fn execute_run(meta: AppMetadata) {
                 .visible(start_visible)
                 .maximized(meta.maximize)
                 .data_directory(data_dir)
-                .initialization_script(NOTIFICATION_POLYFILL);
+                .disable_drag_drop_handler()
+                .enable_clipboard_access()
+                .initialization_script(BROWSER_INTEGRATION_SCRIPT);
 
             if let Some(ref ua) = meta.user_agent {
                 builder = builder.user_agent(ua);
@@ -1021,6 +1093,37 @@ fn execute_run(meta: AppMetadata) {
                     }
                 })
                 .build()?;
+
+            #[cfg(target_os = "linux")]
+            {
+                use webkit2gtk::{PermissionRequestExt, SettingsExt, WebViewExt};
+                let _ = window.with_webview(|platform_webview| {
+                    let wv = platform_webview.inner();
+                    if let Some(settings) = wv.settings() {
+                        settings.set_javascript_can_access_clipboard(true);
+                        settings.set_enable_media_stream(true);
+                        settings.set_enable_mediasource(true);
+                        settings.set_enable_webrtc(true);
+                        settings.set_enable_webaudio(true);
+                        settings.set_enable_webgl(true);
+                        settings.set_enable_encrypted_media(true);
+                        settings.set_enable_media(true);
+                        settings.set_enable_media_capabilities(true);
+                        settings.set_media_playback_requires_user_gesture(false);
+                        settings.set_media_playback_allows_inline(true);
+                        settings.set_enable_fullscreen(true);
+                        settings.set_enable_site_specific_quirks(true);
+                        settings.set_enable_html5_database(true);
+                        settings.set_enable_html5_local_storage(true);
+                        settings.set_allow_file_access_from_file_urls(true);
+                        settings.set_allow_universal_access_from_file_urls(true);
+                    }
+                    wv.connect_permission_request(|_wv, req| {
+                        req.allow();
+                        true
+                    });
+                });
+            }
 
             let _ = window.set_title(&win_title);
 
@@ -2031,6 +2134,17 @@ mod tests {
         assert!(meta.autostart);
         assert!(meta.autostart_hidden);
         assert!(meta.tray);
+    }
+
+    #[test]
+    fn test_browser_integration_script() {
+        assert!(BROWSER_INTEGRATION_SCRIPT.contains("Notification"));
+        assert!(BROWSER_INTEGRATION_SCRIPT.contains("clipboard-read"));
+        assert!(BROWSER_INTEGRATION_SCRIPT.contains("clipboard-write"));
+        assert!(BROWSER_INTEGRATION_SCRIPT.contains("microphone"));
+        assert!(BROWSER_INTEGRATION_SCRIPT.contains("camera"));
+        assert!(BROWSER_INTEGRATION_SCRIPT.contains("navigator.permissions.query"));
+        assert!(BROWSER_INTEGRATION_SCRIPT.contains("navigator.clipboard.read"));
     }
 }
 
