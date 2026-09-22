@@ -793,13 +793,31 @@ fn resolve_metadata(
 
 static FALLBACK_ICON_BYTES: &[u8] = include_bytes!("default_icon.png");
 
-fn convert_to_png(bytes: &[u8]) -> Option<Vec<u8>> {
+fn convert_to_png_scored(bytes: &[u8]) -> Option<(Vec<u8>, bool)> {
     let dyn_img = image::load_from_memory(bytes).ok()?;
+    let (w, h) = (dyn_img.width(), dyn_img.height());
+    if w == 0 || h == 0 {
+        return None;
+    }
+    let ratio = w as f32 / h as f32;
+    let is_square = ratio >= 0.75 && ratio <= 1.33;
+    let cropped = if w != h {
+        let side = w.min(h);
+        let x = (w - side) / 2;
+        let y = (h - side) / 2;
+        dyn_img.crop_imm(x, y, side, side)
+    } else {
+        dyn_img
+    };
     let mut png_buf = Vec::new();
-    dyn_img
+    cropped
         .write_to(&mut std::io::Cursor::new(&mut png_buf), image::ImageFormat::Png)
         .ok()?;
-    Some(png_buf)
+    Some((png_buf, is_square))
+}
+
+fn convert_to_png(bytes: &[u8]) -> Option<Vec<u8>> {
+    convert_to_png_scored(bytes).map(|(b, _)| b)
 }
 
 #[cfg(target_os = "linux")]
@@ -880,6 +898,10 @@ fn fetch_icon(url_str: &str, icon_path: &Path) {
             })
     };
 
+    let mut apple_icons = Vec::new();
+    let mut standard_icons = Vec::new();
+    let mut og_icons = Vec::new();
+
     if let Some(body) = html_body {
         let doc = scraper::Html::parse_document(&body);
         let link_sel = scraper::Selector::parse(
@@ -887,40 +909,59 @@ fn fetch_icon(url_str: &str, icon_path: &Path) {
         )
         .unwrap();
 
-            let mut apple_icons = Vec::new();
-            let mut other_icons = Vec::new();
-
-            for el in doc.select(&link_sel) {
-                let tag_name = el.value().name();
-                if tag_name == "link" {
-                    if let Some(href) = el.value().attr("href") {
-                        let rel = el.value().attr("rel").unwrap_or("").to_lowercase();
-                        if rel.contains("apple-touch-icon") {
-                            apple_icons.push(href.to_string());
-                        } else {
-                            other_icons.push(href.to_string());
-                        }
-                    }
-                } else if tag_name == "meta" {
-                    if let Some(content) = el.value().attr("content") {
-                        other_icons.push(content.to_string());
+        for el in doc.select(&link_sel) {
+            let tag_name = el.value().name();
+            if tag_name == "link" {
+                if let Some(href) = el.value().attr("href") {
+                    let rel = el.value().attr("rel").unwrap_or("").to_lowercase();
+                    if rel.contains("apple-touch-icon") {
+                        apple_icons.push(href.to_string());
+                    } else if rel.contains("icon") {
+                        standard_icons.push(href.to_string());
                     }
                 }
+            } else if tag_name == "meta" {
+                if let Some(content) = el.value().attr("content") {
+                    og_icons.push(content.to_string());
+                }
             }
-            candidate_urls.extend(apple_icons);
-            candidate_urls.extend(other_icons);
         }
+    }
 
+    // High priority: real application icons
+    candidate_urls.extend(apple_icons);
+    candidate_urls.extend(standard_icons);
+
+    // Standard root paths
     if let Ok(base) = Url::parse(url_str) {
+        if let Ok(fav) = base.join("/assets/favicon.ico") {
+            candidate_urls.push(fav.to_string());
+        }
         if let Ok(fav) = base.join("/favicon.ico") {
             candidate_urls.push(fav.to_string());
+        }
+
+        // If URL has a subpath, also check root origin
+        if base.path() != "/" && !base.path().is_empty() {
+            if let Ok(root) = base.join("/") {
+                if let Ok(fav) = root.join("/favicon.ico") {
+                    candidate_urls.push(fav.to_string());
+                }
+                if let Ok(fav) = root.join("/assets/favicon.ico") {
+                    candidate_urls.push(fav.to_string());
+                }
+            }
         }
     } else {
         candidate_urls.push(format!("{}/favicon.ico", url_str));
     }
 
-    let mut saved = false;
+    // Low priority fallback: OpenGraph social media banners (only if no real icon exists)
+    candidate_urls.extend(og_icons);
+
     let base_url = Url::parse(url_str).ok();
+    let mut best_square_png: Option<Vec<u8>> = None;
+    let mut fallback_cropped_png: Option<Vec<u8>> = None;
 
     for candidate in candidate_urls {
         let full_url = if let Some(ref base) = base_url {
@@ -929,29 +970,60 @@ fn fetch_icon(url_str: &str, icon_path: &Path) {
             candidate
         };
 
-        if let Ok(resp) = agent
+        let resp = agent
             .get(&full_url)
             .set(
                 "User-Agent",
                 "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
             )
-            .call()
-        {
-            let mut bytes = Vec::new();
-            if resp.into_reader().read_to_end(&mut bytes).is_ok() && !bytes.is_empty() {
-                if let Some(png_bytes) = convert_to_png(&bytes) {
-                    if fs::write(icon_path, png_bytes).is_ok() {
-                        saved = true;
-                        break;
-                    }
+            .call();
+
+        let bytes = match resp {
+            Ok(r) => {
+                let mut b = Vec::new();
+                if r.into_reader().read_to_end(&mut b).is_ok() && !b.is_empty() {
+                    b
+                } else {
+                    continue;
                 }
+            }
+            Err(_) => {
+                if let Ok(output) = std::process::Command::new("curl")
+                    .arg("-s")
+                    .arg("-L")
+                    .arg("--max-time")
+                    .arg("5")
+                    .arg("-A")
+                    .arg("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
+                    .arg(&full_url)
+                    .output()
+                {
+                    if output.status.success() && !output.stdout.is_empty() {
+                        output.stdout
+                    } else {
+                        continue;
+                    }
+                } else {
+                    continue;
+                }
+            }
+        };
+
+        if let Some((png_bytes, is_square)) = convert_to_png_scored(&bytes) {
+            if is_square {
+                best_square_png = Some(png_bytes);
+                break;
+            } else if fallback_cropped_png.is_none() {
+                fallback_cropped_png = Some(png_bytes);
             }
         }
     }
 
-    if !saved {
-        let _ = fs::write(icon_path, FALLBACK_ICON_BYTES);
-    }
+    let final_png = best_square_png
+        .or(fallback_cropped_png)
+        .unwrap_or_else(|| FALLBACK_ICON_BYTES.to_vec());
+
+    let _ = fs::write(icon_path, final_png);
 }
 
 // Sets Linux process comm, GTK program name (for WM_CLASS), and desktop application name
@@ -2377,6 +2449,36 @@ mod tests {
     fn test_clipboard_image_function() {
         // Calling get_clipboard_image_png directly should not panic
         let _ = get_clipboard_image_png();
+    }
+
+    #[test]
+    fn test_convert_to_png_scored_square_and_rectangular() {
+        // 1. Square image (64x64)
+        let img_square = image::RgbaImage::new(64, 64);
+        let mut buf_sq = Vec::new();
+        img_square
+            .write_to(&mut std::io::Cursor::new(&mut buf_sq), image::ImageFormat::Png)
+            .unwrap();
+
+        let (out_sq, is_sq) = convert_to_png_scored(&buf_sq).unwrap();
+        assert!(is_sq, "64x64 should be scored as square");
+        let decoded_sq = image::load_from_memory(&out_sq).unwrap();
+        assert_eq!(decoded_sq.width(), 64);
+        assert_eq!(decoded_sq.height(), 64);
+
+        // 2. Wide rectangular banner (1200x630, e.g. og:image)
+        let img_rect = image::RgbaImage::new(1200, 630);
+        let mut buf_rect = Vec::new();
+        img_rect
+            .write_to(&mut std::io::Cursor::new(&mut buf_rect), image::ImageFormat::Png)
+            .unwrap();
+
+        let (out_rect, is_rect_sq) = convert_to_png_scored(&buf_rect).unwrap();
+        assert!(!is_rect_sq, "1200x630 banner should not be scored as square icon");
+        let decoded_rect = image::load_from_memory(&out_rect).unwrap();
+        // Should be center-cropped to 630x630 square
+        assert_eq!(decoded_rect.width(), 630);
+        assert_eq!(decoded_rect.height(), 630);
     }
 }
 
