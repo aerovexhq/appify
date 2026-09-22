@@ -114,10 +114,16 @@ checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
 name = "appify"
 version = "0.1.0"
 dependencies = [
+ "base64 0.22.1",
  "clap",
  "dirs 5.0.1",
+ "gdk",
+ "gdk-pixbuf",
+ "glib",
+ "gtk",
  "hex",
  "image",
+ "javascriptcore-rs",
  "scraper",
  "sha2",
  "tauri",

@@ -7,7 +7,7 @@ edition = "2021"
 tauri-build = { version = "2.0.0", features = [] }
 
 [dependencies]
-tauri = { version = "2.0.0", features = ["image-png", "tray-icon"] }
+tauri = { version = "2.0.0", features = ["image-png", "tray-icon", "devtools"] }
 tauri-plugin-opener = "2.0.0"
 clap = { version = "4.5", features = ["derive"] }
 sha2 = "0.10"
@@ -17,6 +17,12 @@ ureq = "2.9"
 scraper = "0.19"
 dirs = "5.0"
 image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp", "ico"] }
+base64 = "0.22"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 webkit2gtk = { version = "2.0", features = ["v2_36"] }
+gtk = "0.18"
+gdk = "0.18"
+gdk-pixbuf = "0.18"
+glib = "0.18"
+javascriptcore-rs = "1.1"

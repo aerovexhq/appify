@@ -531,10 +531,31 @@ const BROWSER_INTEGRATION_SCRIPT: &str = r#"
         };
     } catch (e) {}
 
-    // 3. Fallback for navigator.clipboard.read if missing
+    // 3. Fallback for navigator.clipboard.read if missing / image support
+    window.__appify_latest_image_blob = null;
     try {
-        if (navigator.clipboard && !navigator.clipboard.read) {
+        if (navigator.clipboard) {
+            var origRead = navigator.clipboard.read ? navigator.clipboard.read.bind(navigator.clipboard) : null;
             navigator.clipboard.read = function() {
+                if (window.__appify_latest_image_blob && typeof ClipboardItem !== 'undefined') {
+                    return Promise.resolve([
+                        new ClipboardItem({ 'image/png': window.__appify_latest_image_blob })
+                    ]);
+                }
+                if (origRead) {
+                    return origRead().catch(function() {
+                        if (navigator.clipboard.readText) {
+                            return navigator.clipboard.readText().then(function(text) {
+                                if (typeof ClipboardItem !== 'undefined') {
+                                    var blob = new Blob([text], { type: 'text/plain' });
+                                    return [new ClipboardItem({ 'text/plain': blob })];
+                                }
+                                return [];
+                            });
+                        }
+                        return [];
+                    });
+                }
                 if (navigator.clipboard.readText) {
                     return navigator.clipboard.readText().then(function(text) {
                         if (typeof ClipboardItem !== 'undefined') {
@@ -548,6 +569,89 @@ const BROWSER_INTEGRATION_SCRIPT: &str = r#"
             };
         }
     } catch (e) {}
+
+    // 4. Synthetic paste event dispatcher for images
+    window.__appify_dispatch_paste_image = function(base64Data) {
+        try {
+            var byteChars = atob(base64Data);
+            var byteNums = new Array(byteChars.length);
+            for (var i = 0; i < byteChars.length; i++) {
+                byteNums[i] = byteChars.charCodeAt(i);
+            }
+            var byteArray = new Uint8Array(byteNums);
+            var blob = new Blob([byteArray], { type: 'image/png' });
+            var file = new File([blob], 'pasted_image.png', {
+                type: 'image/png',
+                lastModified: Date.now()
+            });
+
+            window.__appify_latest_image_blob = blob;
+
+            var dt = new DataTransfer();
+            dt.items.add(file);
+
+            var pasteEvent;
+            try {
+                pasteEvent = new ClipboardEvent('paste', {
+                    bubbles: true,
+                    cancelable: true,
+                    composed: true,
+                    clipboardData: dt
+                });
+            } catch (err) {
+                pasteEvent = document.createEvent('Event');
+                pasteEvent.initEvent('paste', true, true);
+                pasteEvent.clipboardData = dt;
+            }
+            pasteEvent.__appify_synthetic = true;
+
+            var target = document.activeElement;
+            if (!target || target === document.body || target === document.documentElement) {
+                target = document.querySelector('[contenteditable="true"]') ||
+                         document.querySelector('div[role="textbox"]') ||
+                         document.querySelector('input') ||
+                         document.querySelector('textarea') ||
+                         document.body ||
+                         document;
+            }
+            target.dispatchEvent(pasteEvent);
+        } catch (e) {
+            console.error('[Appify] Failed to dispatch paste image:', e);
+        }
+    };
+
+    // 5. Intercept native paste events (e.g. from context menu) that lack image data
+    window.addEventListener('paste', function(e) {
+        if (e.__appify_synthetic) return;
+        var hasImage = false;
+        if (e.clipboardData && e.clipboardData.items) {
+            for (var i = 0; i < e.clipboardData.items.length; i++) {
+                if (e.clipboardData.items[i].type && e.clipboardData.items[i].type.indexOf('image') !== -1) {
+                    hasImage = true;
+                    break;
+                }
+            }
+        }
+        if (!hasImage && window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.appify) {
+            window.webkit.messageHandlers.appify.postMessage('check_clipboard_paste');
+        }
+    }, true);
+
+    // 6. DevTools keyboard shortcuts (F12, Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+Shift+J)
+    window.addEventListener('keydown', function(e) {
+        var isCtrlOrCmd = e.ctrlKey || e.metaKey;
+        var isShift = e.shiftKey;
+        var key = e.key ? e.key.toUpperCase() : '';
+
+        var isDevTools = (key === 'F12') || (isCtrlOrCmd && isShift && (key === 'I' || key === 'J' || key === 'C'));
+        if (isDevTools) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.appify) {
+                window.webkit.messageHandlers.appify.postMessage('toggle_devtools');
+            }
+        }
+    }, true);
 })();
 "#;
 
@@ -696,6 +800,44 @@ fn convert_to_png(bytes: &[u8]) -> Option<Vec<u8>> {
         .write_to(&mut std::io::Cursor::new(&mut png_buf), image::ImageFormat::Png)
         .ok()?;
     Some(png_buf)
+}
+
+#[cfg(target_os = "linux")]
+fn get_clipboard_image_png() -> Option<Vec<u8>> {
+    if !gtk::is_initialized() && gtk::init().is_err() {
+        return None;
+    }
+    let clipboard = gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD);
+    if let Some(pixbuf) = clipboard.wait_for_image() {
+        if let Ok(bytes) = pixbuf.save_to_bufferv("png", &[]) {
+            return Some(bytes);
+        }
+    }
+    let uris = clipboard.wait_for_uris();
+    for uri_str in uris {
+        if let Ok(url) = url::Url::parse(uri_str.as_str()) {
+            if url.scheme() == "file" {
+                if let Ok(path) = url.to_file_path() {
+                    let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("").to_lowercase();
+                    if ["png", "jpg", "jpeg", "webp", "gif", "bmp"].contains(&ext.as_str()) {
+                        if let Ok(bytes) = fs::read(&path) {
+                            if ext == "png" {
+                                return Some(bytes);
+                            } else if let Some(png_bytes) = convert_to_png(&bytes) {
+                                return Some(png_bytes);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    None
+}
+
+#[cfg(not(target_os = "linux"))]
+fn get_clipboard_image_png() -> Option<Vec<u8>> {
+    None
 }
 
 fn fetch_icon(url_str: &str, icon_path: &Path) {
@@ -1096,10 +1238,15 @@ fn execute_run(meta: AppMetadata) {
 
             #[cfg(target_os = "linux")]
             {
-                use webkit2gtk::{PermissionRequestExt, SettingsExt, WebViewExt};
-                let _ = window.with_webview(|platform_webview| {
+                use gtk::prelude::*;
+                use javascriptcore::ValueExt;
+                use webkit2gtk::{PermissionRequestExt, SettingsExt, UserContentManagerExt, WebViewExt};
+
+                let w_for_webview = window.clone();
+                let _ = window.with_webview(move |platform_webview| {
                     let wv = platform_webview.inner();
-                    if let Some(settings) = wv.settings() {
+                    if let Some(settings) = WebViewExt::settings(&wv) {
+                        settings.set_enable_developer_extras(true);
                         settings.set_javascript_can_access_clipboard(true);
                         settings.set_enable_media_stream(true);
                         settings.set_enable_mediasource(true);
@@ -1121,6 +1268,71 @@ fn execute_run(meta: AppMetadata) {
                     wv.connect_permission_request(|_wv, req| {
                         req.allow();
                         true
+                    });
+
+                    // Register script message handler for IPC from injected JS
+                    if let Some(ucm) = wv.user_content_manager() {
+                        let _ = ucm.register_script_message_handler("appify");
+                        let w_for_msg = w_for_webview.clone();
+                        ucm.connect_script_message_received(Some("appify"), move |_ucm, js_res| {
+                            if let Some(val) = js_res.js_value() {
+                                let msg = val.to_str();
+                                match msg.as_str() {
+                                    "toggle_devtools" => {
+                                        if w_for_msg.is_devtools_open() {
+                                            w_for_msg.close_devtools();
+                                        } else {
+                                            w_for_msg.open_devtools();
+                                        }
+                                    }
+                                    "check_clipboard_paste" => {
+                                        if let Some(png_bytes) = get_clipboard_image_png() {
+                                            let b64 = base64::Engine::encode(&base64::engine::general_purpose::STANDARD, &png_bytes);
+                                            let js = format!("window.__appify_dispatch_paste_image('{}');", b64);
+                                            let _ = w_for_msg.eval(&js);
+                                        }
+                                    }
+                                    _ => {}
+                                }
+                            }
+                        });
+                    }
+
+                    // Intercept keyboard shortcuts: F12, Ctrl+Shift+I/C/J, and Ctrl+V
+                    let w_for_keys = w_for_webview.clone();
+                    wv.connect_key_press_event(move |_wv, event_key| {
+                        let keyval = event_key.keyval();
+                        let state = event_key.state();
+                        let is_ctrl = state.contains(gdk::ModifierType::CONTROL_MASK);
+                        let is_shift = state.contains(gdk::ModifierType::SHIFT_MASK);
+
+                        // DevTools shortcuts: F12, Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+Shift+J
+                        if keyval == gdk::keys::constants::F12
+                            || (is_ctrl && is_shift && (
+                                keyval == gdk::keys::constants::I || keyval == gdk::keys::constants::i
+                                || keyval == gdk::keys::constants::C || keyval == gdk::keys::constants::c
+                                || keyval == gdk::keys::constants::J || keyval == gdk::keys::constants::j
+                            ))
+                        {
+                            if w_for_keys.is_devtools_open() {
+                                w_for_keys.close_devtools();
+                            } else {
+                                w_for_keys.open_devtools();
+                            }
+                            return glib::Propagation::Stop;
+                        }
+
+                        // Ctrl+V: Image paste interception
+                        if is_ctrl && !is_shift && (keyval == gdk::keys::constants::v || keyval == gdk::keys::constants::V) {
+                            if let Some(png_bytes) = get_clipboard_image_png() {
+                                let b64 = base64::Engine::encode(&base64::engine::general_purpose::STANDARD, &png_bytes);
+                                let js = format!("window.__appify_dispatch_paste_image('{}');", b64);
+                                let _ = w_for_keys.eval(&js);
+                                return glib::Propagation::Stop;
+                            }
+                        }
+
+                        glib::Propagation::Proceed
                     });
                 });
             }
@@ -1166,8 +1378,9 @@ fn execute_run(meta: AppMetadata) {
                 if let Some(tray_icon) = icon_img {
                     let show_hide_item = tauri::menu::MenuItem::with_id(app, "toggle", "Show / Hide", true, None::<&str>)?;
                     let reload_item = tauri::menu::MenuItem::with_id(app, "reload", "Reload", true, None::<&str>)?;
+                    let devtools_item = tauri::menu::MenuItem::with_id(app, "devtools", "Toggle Developer Tools", true, None::<&str>)?;
                     let quit_item = tauri::menu::MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
-                    let menu = tauri::menu::Menu::with_items(app, &[&show_hide_item, &reload_item, &quit_item])?;
+                    let menu = tauri::menu::Menu::with_items(app, &[&show_hide_item, &reload_item, &devtools_item, &quit_item])?;
 
                     let _tray = tauri::tray::TrayIconBuilder::new()
                         .icon(tray_icon)
@@ -1190,6 +1403,15 @@ fn execute_run(meta: AppMetadata) {
                                 "reload" => {
                                     if let Some(w) = app_handle.get_webview_window("main") {
                                         let _ = w.reload();
+                                    }
+                                }
+                                "devtools" => {
+                                    if let Some(w) = app_handle.get_webview_window("main") {
+                                        if w.is_devtools_open() {
+                                            w.close_devtools();
+                                        } else {
+                                            w.open_devtools();
+                                        }
                                     }
                                 }
                                 "quit" => {
@@ -2145,6 +2367,16 @@ mod tests {
         assert!(BROWSER_INTEGRATION_SCRIPT.contains("camera"));
         assert!(BROWSER_INTEGRATION_SCRIPT.contains("navigator.permissions.query"));
         assert!(BROWSER_INTEGRATION_SCRIPT.contains("navigator.clipboard.read"));
+        assert!(BROWSER_INTEGRATION_SCRIPT.contains("__appify_dispatch_paste_image"));
+        assert!(BROWSER_INTEGRATION_SCRIPT.contains("toggle_devtools"));
+        assert!(BROWSER_INTEGRATION_SCRIPT.contains("check_clipboard_paste"));
+        assert!(BROWSER_INTEGRATION_SCRIPT.contains("F12"));
+    }
+
+    #[test]
+    fn test_clipboard_image_function() {
+        // Calling get_clipboard_image_png directly should not panic
+        let _ = get_clipboard_image_png();
     }
 }
 
