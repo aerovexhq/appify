@@ -22,6 +22,6 @@
   "download_url": "https://cdn.appify.aerovex.net/v1/themes/oled-true-black.css",
   "preview_code": "/* OLED True Black Theme for Appify */\nhtml, body {\n  background-color: #000000 !important;\n  color: #f1f5f9 !important;\n}\n\n[class*=\"dark\"], [data-theme=\"dark\"], body.dark {\n  background-color: #000000 !important;\n}\n",
   "code_content": "/* OLED True Black Theme for Appify */\nhtml, body {\n  background-color: #000000 !important;\n  color: #f1f5f9 !important;\n}\n\n[class*=\"dark\"], [data-theme=\"dark\"], body.dark {\n  background-color: #000000 !important;\n}\n",
-  "created_at": "2026-09-22T17:00:40.986Z",
-  "updated_at": "2026-09-22T17:00:40.986Z"
+  "created_at": "2026-09-24T06:51:41.077Z",
+  "updated_at": "2026-09-24T06:51:41.077Z"
 }

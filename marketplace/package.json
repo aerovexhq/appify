@@ -2,7 +2,6 @@
   "name": "appify-cdn",
   "version": "1.0.0",
   "description": "Static CDN and Marketplace Index for Appify Plugins and Themes",
-  "main": "src/index.js",
   "type": "module",
   "scripts": {
     "build": "node scripts/build-marketplace.js",

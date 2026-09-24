@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "cdn_base": "https://cdn.appify.aerovex.net",
-  "generated_at": "2026-09-22T17:00:40.992Z",
+  "generated_at": "2026-09-24T06:51:41.083Z",
   "total_items": 4,
   "plugins_count": 2,
   "themes_count": 2,
@@ -29,8 +29,8 @@
       "download_url": "https://cdn.appify.aerovex.net/v1/plugins/github-wide-diffs.js",
       "preview_code": "// GitHub Wide Diffs Plugin for Appify\n(function () {\n  const applyWideLayout = () => {\n    const containers = document.querySelectorAll(\n      \".container-xl, .container-lg, .diff-view, .pull-request-tab-content\"\n    );\n    containers.forEach((el) => {\n      el.style.setProperty(\"max-width\", \"98%\", \"important\");\n      el.style.setProperty(\"width\", \"98%\", \"important\");\n    });\n  };\n\n  window.addEventListener(\"load\", applyWideLayout);\n  const observer = new MutationObserver(applyWideLayout);\n  observer.observe(document.body, { childList: true, subtree: true });\n  applyWideLayout();\n})();\n",
       "code_content": "// GitHub Wide Diffs Plugin for Appify\n(function () {\n  const applyWideLayout = () => {\n    const containers = document.querySelectorAll(\n      \".container-xl, .container-lg, .diff-view, .pull-request-tab-content\"\n    );\n    containers.forEach((el) => {\n      el.style.setProperty(\"max-width\", \"98%\", \"important\");\n      el.style.setProperty(\"width\", \"98%\", \"important\");\n    });\n  };\n\n  window.addEventListener(\"load\", applyWideLayout);\n  const observer = new MutationObserver(applyWideLayout);\n  observer.observe(document.body, { childList: true, subtree: true });\n  applyWideLayout();\n})();\n",
-      "created_at": "2026-09-22T17:00:40.983Z",
-      "updated_at": "2026-09-22T17:00:40.983Z"
+      "created_at": "2026-09-24T06:51:41.071Z",
+      "updated_at": "2026-09-24T06:51:41.071Z"
     },
     {
       "id": "nord-frost",
@@ -56,8 +56,8 @@
       "download_url": "https://cdn.appify.aerovex.net/v1/themes/nord-frost.css",
       "preview_code": "/* Nord Frost Arctic Theme for Appify */\n:root {\n  --nord0: #2e3440;\n  --nord1: #3b4252;\n  --nord2: #434c5e;\n  --nord3: #4c566a;\n  --nord4: #d8dee9;\n  --nord5: #e5e9f0;\n  --nord6: #eceff4;\n  --nord7: #8fbcbb;\n  --nord8: #88c0d0;\n  --nord9: #81a1c1;\n  --nord10: #5e81ac;\n}\n\nbody {\n  background-color: var(--nord0) !important;\n  color: var(--nord6) !important;\n}\n",
       "code_content": "/* Nord Frost Arctic Theme for Appify */\n:root {\n  --nord0: #2e3440;\n  --nord1: #3b4252;\n  --nord2: #434c5e;\n  --nord3: #4c566a;\n  --nord4: #d8dee9;\n  --nord5: #e5e9f0;\n  --nord6: #eceff4;\n  --nord7: #8fbcbb;\n  --nord8: #88c0d0;\n  --nord9: #81a1c1;\n  --nord10: #5e81ac;\n}\n\nbody {\n  background-color: var(--nord0) !important;\n  color: var(--nord6) !important;\n}\n",
-      "created_at": "2026-09-22T17:00:40.985Z",
-      "updated_at": "2026-09-22T17:00:40.985Z"
+      "created_at": "2026-09-24T06:51:41.076Z",
+      "updated_at": "2026-09-24T06:51:41.076Z"
     },
     {
       "id": "oled-true-black",
@@ -83,8 +83,8 @@
       "download_url": "https://cdn.appify.aerovex.net/v1/themes/oled-true-black.css",
       "preview_code": "/* OLED True Black Theme for Appify */\nhtml, body {\n  background-color: #000000 !important;\n  color: #f1f5f9 !important;\n}\n\n[class*=\"dark\"], [data-theme=\"dark\"], body.dark {\n  background-color: #000000 !important;\n}\n",
       "code_content": "/* OLED True Black Theme for Appify */\nhtml, body {\n  background-color: #000000 !important;\n  color: #f1f5f9 !important;\n}\n\n[class*=\"dark\"], [data-theme=\"dark\"], body.dark {\n  background-color: #000000 !important;\n}\n",
-      "created_at": "2026-09-22T17:00:40.986Z",
-      "updated_at": "2026-09-22T17:00:40.986Z"
+      "created_at": "2026-09-24T06:51:41.077Z",
+      "updated_at": "2026-09-24T06:51:41.077Z"
     },
     {
       "id": "youtube-ambient-control",
@@ -110,8 +110,8 @@
       "download_url": "https://cdn.appify.aerovex.net/v1/plugins/youtube-ambient-control.js",
       "preview_code": "// YouTube Ambient Enhancer Plugin for Appify\n(function () {\n  const optimizePlayer = () => {\n    const ambient = document.getElementById(\"cinematic-container\");\n    if (ambient) {\n      ambient.style.setProperty(\"display\", \"none\", \"important\");\n    }\n  };\n\n  window.addEventListener(\"load\", optimizePlayer);\n  setInterval(optimizePlayer, 2000);\n})();\n",
       "code_content": "// YouTube Ambient Enhancer Plugin for Appify\n(function () {\n  const optimizePlayer = () => {\n    const ambient = document.getElementById(\"cinematic-container\");\n    if (ambient) {\n      ambient.style.setProperty(\"display\", \"none\", \"important\");\n    }\n  };\n\n  window.addEventListener(\"load\", optimizePlayer);\n  setInterval(optimizePlayer, 2000);\n})();\n",
-      "created_at": "2026-09-22T17:00:40.984Z",
-      "updated_at": "2026-09-22T17:00:40.984Z"
+      "created_at": "2026-09-24T06:51:41.075Z",
+      "updated_at": "2026-09-24T06:51:41.075Z"
     }
   ]
 }

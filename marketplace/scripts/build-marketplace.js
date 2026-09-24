@@ -122,5 +122,27 @@ fs.writeFileSync(indexPath, JSON.stringify(catalog, null, 2), "utf8");
 // Also write a root index.json
 fs.writeFileSync(path.join(PUBLIC_DIR, "index.json"), JSON.stringify(catalog, null, 2), "utf8");
 
+// Write Cloudflare Static Assets _headers file for edge CORS and Cache-Control
+const headersContent = `/*
+  Access-Control-Allow-Origin: *
+  Access-Control-Allow-Methods: GET, HEAD, OPTIONS
+  Access-Control-Allow-Headers: Content-Type, Range, If-None-Match
+  X-Content-Type-Options: nosniff
+
+/v1/*.json
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: public, max-age=180, s-maxage=900, stale-while-revalidate=86400
+
+/v1/plugins/*.js
+  Content-Type: application/javascript; charset=utf-8
+  Cache-Control: public, max-age=86400, s-maxage=604800, immutable
+
+/v1/themes/*.css
+  Content-Type: text/css; charset=utf-8
+  Cache-Control: public, max-age=86400, s-maxage=604800, immutable
+`;
+fs.writeFileSync(path.join(PUBLIC_DIR, "_headers"), headersContent, "utf8");
+
 console.log(`\n🎉 Successfully built marketplace catalog with ${items.length} items!`);
 console.log(`   Output: ${catalogPath}`);
+console.log(`   Static Headers: ${path.join(PUBLIC_DIR, "_headers")}`);

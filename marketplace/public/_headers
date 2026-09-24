@@ -1,0 +1,17 @@
+/*
+  Access-Control-Allow-Origin: *
+  Access-Control-Allow-Methods: GET, HEAD, OPTIONS
+  Access-Control-Allow-Headers: Content-Type, Range, If-None-Match
+  X-Content-Type-Options: nosniff
+
+/v1/*.json
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: public, max-age=180, s-maxage=900, stale-while-revalidate=86400
+
+/v1/plugins/*.js
+  Content-Type: application/javascript; charset=utf-8
+  Cache-Control: public, max-age=86400, s-maxage=604800, immutable
+
+/v1/themes/*.css
+  Content-Type: text/css; charset=utf-8
+  Cache-Control: public, max-age=86400, s-maxage=604800, immutable

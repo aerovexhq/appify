@@ -22,6 +22,6 @@
   "download_url": "https://cdn.appify.aerovex.net/v1/plugins/youtube-ambient-control.js",
   "preview_code": "// YouTube Ambient Enhancer Plugin for Appify\n(function () {\n  const optimizePlayer = () => {\n    const ambient = document.getElementById(\"cinematic-container\");\n    if (ambient) {\n      ambient.style.setProperty(\"display\", \"none\", \"important\");\n    }\n  };\n\n  window.addEventListener(\"load\", optimizePlayer);\n  setInterval(optimizePlayer, 2000);\n})();\n",
   "code_content": "// YouTube Ambient Enhancer Plugin for Appify\n(function () {\n  const optimizePlayer = () => {\n    const ambient = document.getElementById(\"cinematic-container\");\n    if (ambient) {\n      ambient.style.setProperty(\"display\", \"none\", \"important\");\n    }\n  };\n\n  window.addEventListener(\"load\", optimizePlayer);\n  setInterval(optimizePlayer, 2000);\n})();\n",
-  "created_at": "2026-09-22T17:00:40.984Z",
-  "updated_at": "2026-09-22T17:00:40.984Z"
+  "created_at": "2026-09-24T06:51:41.075Z",
+  "updated_at": "2026-09-24T06:51:41.075Z"
 }
