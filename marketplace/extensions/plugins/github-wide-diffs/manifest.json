@@ -1,0 +1,11 @@
+{
+  "id": "github-wide-diffs",
+  "name": "GitHub Wide Diffs",
+  "description": "Expands GitHub diffs, pull request code viewers, and table containers across the full screen width.",
+  "category": "plugin",
+  "author": "Aerovex",
+  "author_url": "https://github.com/aerovexsim",
+  "version": "1.0.0",
+  "target_domains": ["github.com"],
+  "tags": ["github", "developer", "layout", "productive"]
+}

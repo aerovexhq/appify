@@ -1,0 +1,18 @@
+{
+  "name": "appify-cdn",
+  "version": "1.0.0",
+  "description": "Static CDN and Marketplace Index for Appify Plugins and Themes",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-marketplace.js",
+    "preview": "npm run build && wrangler dev",
+    "deploy": "npm run build && wrangler deploy"
+  },
+  "keywords": ["appify", "marketplace", "cdn", "cloudflare-workers"],
+  "author": "Aerovex",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.109.0"
+  }
+}

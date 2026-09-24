@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appify — Desktop Web App Manager</title>
+  <link rel="stylesheet" href="vendor/monaco/monaco.bundle.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">Appify</span>
+          <span class="brand-version">v0.1.0</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="installed">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          <span>My Apps</span>
+          <span class="badge-count" id="installed-count">0</span>
+        </button>
+
+        <button class="nav-item" data-tab="presets">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="12 8 8 12 12 16 16 12 12 8"></polygon>
+            <line x1="12" y1="2" x2="12" y2="4"></line>
+            <line x1="12" y1="20" x2="12" y2="22"></line>
+            <line x1="20" y1="12" x2="22" y2="12"></line>
+            <line x1="2" y1="12" x2="4" y2="12"></line>
+          </svg>
+          <span>Preset Store</span>
+          <span class="badge-new">Presets</span>
+        </button>
+
+        <button class="nav-item" data-tab="extensions">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+            <path d="M2 17l10 5 10-5"></path>
+            <path d="M2 12l10 5 10-5"></path>
+          </svg>
+          <span>Plugins & Themes</span>
+        </button>
+
+        <button class="nav-item" data-tab="marketplace">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span>Marketplace</span>
+          <span class="badge-new" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3);">CDN</span>
+        </button>
+
+        <button class="nav-item" data-tab="new-app">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="16"></line>
+            <line x1="8" y1="12" x2="16" y2="12"></line>
+          </svg>
+          <span>Install Custom</span>
+        </button>
+
+        <button class="nav-item" data-tab="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="3" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span>System & Info</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="status-indicator">
+          <span class="status-dot"></span>
+          <span class="status-text" id="status-engine">Ready</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <header class="topbar">
+        <div class="topbar-title-section">
+          <h1 id="view-title">Installed Applications</h1>
+          <p id="view-desc" class="subtitle">Manage, launch, and configure your isolated desktop web apps.</p>
+        </div>
+
+        <div class="topbar-actions">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="search-input" placeholder="Search installed apps..." autocomplete="off">
+          </div>
+
+          <button class="btn btn-primary" id="btn-quick-new">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>New App</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- View Containers -->
+      <div class="content-scroll">
+        <!-- 1. Installed Apps View -->
+        <section class="tab-view active" id="tab-installed">
+          <div id="installed-grid" class="cards-grid">
+            <!-- App cards dynamically injected here -->
+          </div>
+
+          <div id="installed-empty" class="empty-state hidden">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+            </div>
+            <h3>No Web Apps Installed Yet</h3>
+            <p>Convert your favorite websites into native desktop apps with isolated cookies, system tray, and custom scripts.</p>
+            <div class="empty-actions">
+              <button class="btn btn-primary" id="empty-go-presets">Browse Preset Store</button>
+              <button class="btn btn-secondary" id="empty-go-new">Add Custom App</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. Preset Store View -->
+        <section class="tab-view" id="tab-presets">
+          <div class="banner">
+            <div class="banner-content">
+              <h2>Curated Web App Presets</h2>
+              <p>One-click native app setups with official ecosystem domain isolation, system tray management, clipboard image paste, and autostart capabilities.</p>
+            </div>
+          </div>
+
+
+
+          <div id="presets-grid" class="cards-grid presets-grid">
+            <!-- Preset cards dynamically injected here -->
+          </div>
+        </section>
+
+        <!-- 3. Plugins & Themes View -->
+        <section class="tab-view" id="tab-extensions">
+          <div class="banner">
+            <div class="banner-content">
+              <h2>Plugins & Themes Studio</h2>
+              <p>Extend and style your web apps with modular JavaScript plugins and CSS themes. Built-in extensions are protected system components.</p>
+            </div>
+            <div class="banner-actions">
+              <button class="btn btn-primary" id="btn-create-extension">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>New Extension</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="extension-filter-bar">
+            <div class="extension-filter-tabs">
+              <button class="ext-tab-btn active" data-exttype="all" id="ext-filter-all">All Extensions (0)</button>
+              <button class="ext-tab-btn" data-exttype="plugin" id="ext-filter-plugins">Plugins (JS) (0)</button>
+              <button class="ext-tab-btn" data-exttype="theme" id="ext-filter-themes">Themes (CSS) (0)</button>
+            </div>
+          </div>
+
+          <div id="extensions-grid" class="cards-grid extensions-grid">
+            <!-- Extension cards dynamically injected here -->
+          </div>
+        </section>
+
+        <!-- 3.5. Community Marketplace View -->
+        <section class="tab-view" id="tab-marketplace">
+          <div class="banner marketplace-banner">
+            <div class="banner-content">
+              <h2>Community Marketplace</h2>
+              <p>Discover, preview, and install community-verified plugins and themes hosted statically on Cloudflare CDN.</p>
+            </div>
+            <div class="banner-actions">
+              <a href="https://github.com/aerovexsim/appify/issues/new/choose" target="_blank" rel="noopener" class="btn btn-secondary" id="btn-submit-marketplace-ext">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                </svg>
+                <span>Submit Extension (GitHub)</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="marketplace-toolbar">
+            <div class="extension-filter-tabs">
+              <button class="ext-tab-btn active" data-marketfilter="all" id="market-filter-all">All (0)</button>
+              <button class="ext-tab-btn" data-marketfilter="plugin" id="market-filter-plugins">Plugins (JS) (0)</button>
+              <button class="ext-tab-btn" data-marketfilter="theme" id="market-filter-themes">Themes (CSS) (0)</button>
+            </div>
+            <div class="marketplace-search-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="marketplace-search-input" placeholder="Search marketplace by name, author, tag...">
+            </div>
+            <div class="marketplace-cdn-badge" title="CDN status">
+              <span class="status-dot online"></span>
+              <span>cdn.appify.aerovex.net</span>
+            </div>
+          </div>
+
+          <div id="marketplace-grid" class="cards-grid marketplace-grid">
+            <!-- Marketplace cards injected here -->
+          </div>
+        </section>
+
+        <!-- 4. New App / Custom Installer View -->
+        <section class="tab-view" id="tab-new-app">
+          <div class="form-container">
+            <form id="install-form" onsubmit="return false;">
+              <div class="form-section">
+                <h3>Application Target</h3>
+                <div class="form-row">
+                  <div class="form-group flex-2">
+                    <label for="form-url">Target URL or Alias <span class="required">*</span></label>
+                    <div class="input-with-button">
+                      <input type="text" id="form-url" placeholder="https://web.whatsapp.com or discord" required>
+                      <button type="button" class="btn btn-secondary" id="btn-detect-url">Auto Detect</button>
+                    </div>
+                    <span class="field-hint">Enter a full URL or popular alias (e.g. whatsapp, discord, telegram, spotify).</span>
+                  </div>
+
+                  <div class="form-group flex-1">
+                    <label for="form-name">Display Name</label>
+                    <input type="text" id="form-name" placeholder="Auto-detected if blank">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group flex-1">
+                    <label for="form-wmclass">Window Class (WM_CLASS)</label>
+                    <input type="text" id="form-wmclass" placeholder="e.g. my-app-desktop">
+                  </div>
+
+                  <div class="form-group flex-1">
+                    <label for="form-icon">Custom Icon (Optional)</label>
+                    <input type="text" id="form-icon" placeholder="Image URL or local file path">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="form-domains">Allowed Ecosystem Domains (Optional)</label>
+                  <input type="text" id="form-domains" placeholder="domain1.com, domain2.net (comma separated)">
+                  <span class="field-hint">Keep specific external auth or CDN domains inside the app window instead of opening in default browser.</span>
+                </div>
+              </div>
+
+              <div class="form-section">
+                <h3>Behavior & Desktop Integration</h3>
+                <div class="toggles-grid">
+                  <label class="toggle-card">
+                    <div class="toggle-info">
+                      <span class="toggle-title">Hide on Close</span>
+                      <span class="toggle-desc">Keep running in the background when the window is closed</span>
+                    </div>
+                    <input type="checkbox" id="form-hide-close" class="switch-checkbox" checked>
+                    <span class="switch-slider"></span>
+                  </label>
+
+                  <label class="toggle-card">
+                    <div class="toggle-info">
+                      <span class="toggle-title">Single Instance</span>
+                      <span class="toggle-desc">Prevent multiple windows; focus existing running instance</span>
+                    </div>
+                    <input type="checkbox" id="form-single-instance" class="switch-checkbox" checked>
+                    <span class="switch-slider"></span>
+                  </label>
+
+                  <label class="toggle-card">
+                    <div class="toggle-info">
+                      <span class="toggle-title">System Tray Icon</span>
+                      <span class="toggle-desc">Show tray icon with Show/Hide, DevTools, and Quit menu</span>
+                    </div>
+                    <input type="checkbox" id="form-tray" class="switch-checkbox" checked>
+                    <span class="switch-slider"></span>
+                  </label>
+
+                  <label class="toggle-card">
+                    <div class="toggle-info">
+                      <span class="toggle-title">Start Hidden</span>
+                      <span class="toggle-desc">Launch minimized in tray / background upon opening</span>
+                    </div>
+                    <input type="checkbox" id="form-start-hidden" class="switch-checkbox">
+                    <span class="switch-slider"></span>
+                  </label>
+
+                  <label class="toggle-card">
+                    <div class="toggle-info">
+                      <span class="toggle-title">Autostart on Boot</span>
+                      <span class="toggle-desc">Automatically launch on system login</span>
+                    </div>
+                    <input type="checkbox" id="form-autostart" class="switch-checkbox">
+                    <span class="switch-slider"></span>
+                  </label>
+
+                  <label class="toggle-card">
+                    <div class="toggle-info">
+                      <span class="toggle-title">Autostart Hidden</span>
+                      <span class="toggle-desc">Launch silently in background tray on system login</span>
+                    </div>
+                    <input type="checkbox" id="form-autostart-hidden" class="switch-checkbox">
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Collapsible Advanced Options -->
+              <details class="form-collapsible">
+                <summary>Window Dimensions, Zoom & User-Agent</summary>
+                <div class="collapsible-content">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="form-width">Initial Width (px)</label>
+                      <div class="modern-number-stepper">
+                        <input type="number" id="form-width" placeholder="1100" min="600" max="3840" step="50">
+                        <div class="stepper-controls">
+                          <button type="button" class="stepper-btn stepper-up" tabindex="-1" aria-label="Increase">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                          </button>
+                          <button type="button" class="stepper-btn stepper-down" tabindex="-1" aria-label="Decrease">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="form-height">Initial Height (px)</label>
+                      <div class="modern-number-stepper">
+                        <input type="number" id="form-height" placeholder="800" min="400" max="2160" step="50">
+                        <div class="stepper-controls">
+                          <button type="button" class="stepper-btn stepper-up" tabindex="-1" aria-label="Increase">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                          </button>
+                          <button type="button" class="stepper-btn stepper-down" tabindex="-1" aria-label="Decrease">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="form-zoom">Zoom Level</label>
+                      <div class="modern-number-stepper">
+                        <input type="number" id="form-zoom" placeholder="1.0" step="0.05" min="0.5" max="3.0">
+                        <div class="stepper-controls">
+                          <button type="button" class="stepper-btn stepper-up" tabindex="-1" aria-label="Increase">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                          </button>
+                          <button type="button" class="stepper-btn stepper-down" tabindex="-1" aria-label="Decrease">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="form-ua">Custom User-Agent (Optional)</label>
+                    <input type="text" id="form-ua" placeholder="Leave empty for modern Chrome desktop User-Agent">
+                  </div>
+                </div>
+              </details>
+
+              <!-- Collapsible Scripts & CSS Injection -->
+              <details class="form-collapsible">
+                <summary>Custom User Scripts & CSS Injection</summary>
+                <div class="collapsible-content">
+                  <div class="form-group">
+                    <div class="label-with-actions">
+                      <label for="form-custom-js">Custom JavaScript (injected on load)</label>
+                      <span class="tag-badge">userscript.js</span>
+                    </div>
+                    <textarea id="form-custom-js" rows="4" placeholder="// Custom JavaScript to execute in webview...&#10;console.log('Appify user script loaded');"></textarea>
+                  </div>
+
+                  <div class="form-group">
+                    <div class="label-with-actions">
+                      <label for="form-custom-css">Custom CSS (styling overrides)</label>
+                      <span class="tag-badge">userstyle.css</span>
+                    </div>
+                    <textarea id="form-custom-css" rows="4" placeholder="/* Custom CSS styling rules... */&#10;/* e.g., body { font-family: sans-serif; } */"></textarea>
+                  </div>
+                </div>
+              </details>
+
+              <div class="form-submit-row">
+                <button type="submit" class="btn btn-primary btn-large" id="btn-submit-install">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span>Install Desktop Application</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- 4. Settings & Info View -->
+        <section class="tab-view" id="tab-settings">
+          <div class="settings-grid">
+            <div class="settings-card">
+              <h3>System & Installation</h3>
+              <p class="card-desc">Appify is a standalone zero-dependency web-to-desktop converter.</p>
+              
+              <div class="info-list">
+                <div class="info-item">
+                  <span class="info-label">Binary Path</span>
+                  <span class="info-value code" id="sys-bin-path">~/.local/bin/appify</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">App Profiles</span>
+                  <span class="info-value code" id="sys-profiles-path">~/.local/share/appify/profiles/</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Desktop Launchers</span>
+                  <span class="info-value code" id="sys-desktop-path">~/.local/share/applications/</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Autostart Config</span>
+                  <span class="info-value code" id="sys-autostart-path">~/.config/autostart/</span>
+                </div>
+              </div>
+
+              <div class="card-action">
+                <button class="btn btn-secondary" id="btn-self-install">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  <span>Register Appify in System Applications</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="settings-card">
+              <h3>Built-in Shortcuts & Features</h3>
+              <div class="shortcuts-list">
+                <div class="shortcut-item">
+                  <div class="shortcut-keys"><kbd>F12</kbd> or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd></div>
+                  <div class="shortcut-desc">Toggle WebKit Developer Tools & Inspector</div>
+                </div>
+                <div class="shortcut-item">
+                  <div class="shortcut-keys"><kbd>Ctrl</kbd>+<kbd>V</kbd></div>
+                  <div class="shortcut-desc">Seamless Image & Screenshot Paste from Clipboard</div>
+                </div>
+                <div class="shortcut-item">
+                  <div class="shortcut-keys"><kbd>Drag & Drop</kbd></div>
+                  <div class="shortcut-desc">Native HTML5 drag-and-drop file upload into web apps</div>
+                </div>
+                <div class="shortcut-item">
+                  <div class="shortcut-keys"><kbd>System Tray</kbd></div>
+                  <div class="shortcut-desc">Background management, reload, devtools, and clean exit</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-card full-width">
+              <h3>CLI Power Commands</h3>
+              <p class="card-desc">All features in this GUI are completely accessible via terminal commands:</p>
+              <div class="cli-cheat-sheet">
+                <code>appify preset list</code>
+                <code>appify preset install whatsapp --autostart-hidden</code>
+                <code>appify preset install discord --tray --hide-on-close</code>
+                <code>appify configure discord --zoom 1.1 --inject-css "body { filter: contrast(1.1); }"</code>
+                <code>appify list</code>
+                <code>appify uninstall whatsapp</code>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Reconfigure & Script Editor Modal -->
+  <div id="modal-edit" class="modal-overlay hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <img id="modal-app-icon" class="modal-app-icon" src="" alt="App Icon">
+          <div>
+            <h2 id="modal-app-name">Configure App</h2>
+            <span id="modal-app-url" class="modal-app-url">https://...</span>
+          </div>
+        </div>
+        <button class="modal-close" id="btn-modal-close">&times;</button>
+      </div>
+
+      <div class="modal-tabs">
+        <button class="modal-tab-btn active" data-modaltab="settings">Settings & Toggles</button>
+        <button class="modal-tab-btn" data-modaltab="scripts">Plugins & Themes</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Modal Tab 1: Settings -->
+        <div class="modal-tab-view active" id="modal-tab-settings">
+          <input type="hidden" id="modal-app-hash">
+          
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="edit-name">Display Name</label>
+              <input type="text" id="edit-name">
+            </div>
+            <div class="form-group flex-1">
+              <label for="edit-wmclass">Window Class (WM_CLASS)</label>
+              <input type="text" id="edit-wmclass">
+            </div>
+          </div>
+
+          <div class="toggles-grid modal-toggles">
+            <label class="toggle-card mini">
+              <div class="toggle-info">
+                <span class="toggle-title">Hide on Close</span>
+              </div>
+              <input type="checkbox" id="edit-hide-close" class="switch-checkbox">
+              <span class="switch-slider"></span>
+            </label>
+
+            <label class="toggle-card mini">
+              <div class="toggle-info">
+                <span class="toggle-title">Single Instance</span>
+              </div>
+              <input type="checkbox" id="edit-single-instance" class="switch-checkbox">
+              <span class="switch-slider"></span>
+            </label>
+
+            <label class="toggle-card mini">
+              <div class="toggle-info">
+                <span class="toggle-title">System Tray</span>
+              </div>
+              <input type="checkbox" id="edit-tray" class="switch-checkbox">
+              <span class="switch-slider"></span>
+            </label>
+
+            <label class="toggle-card mini">
+              <div class="toggle-info">
+                <span class="toggle-title">Start Hidden</span>
+              </div>
+              <input type="checkbox" id="edit-start-hidden" class="switch-checkbox">
+              <span class="switch-slider"></span>
+            </label>
+
+            <label class="toggle-card mini">
+              <div class="toggle-info">
+                <span class="toggle-title">Autostart</span>
+              </div>
+              <input type="checkbox" id="edit-autostart" class="switch-checkbox">
+              <span class="switch-slider"></span>
+            </label>
+
+            <label class="toggle-card mini">
+              <div class="toggle-info">
+                <span class="toggle-title">Autostart Hidden</span>
+              </div>
+              <input type="checkbox" id="edit-autostart-hidden" class="switch-checkbox">
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-zoom">Zoom Level</label>
+              <div class="modern-number-stepper">
+                <input type="number" id="edit-zoom" step="0.05" min="0.5" max="3.0">
+                <div class="stepper-controls">
+                  <button type="button" class="stepper-btn stepper-up" tabindex="-1" aria-label="Increase">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                  </button>
+                  <button type="button" class="stepper-btn stepper-down" tabindex="-1" aria-label="Decrease">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="edit-width">Window Width (px)</label>
+              <div class="modern-number-stepper">
+                <input type="number" id="edit-width" step="50" min="400" max="3840">
+                <div class="stepper-controls">
+                  <button type="button" class="stepper-btn stepper-up" tabindex="-1" aria-label="Increase">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                  </button>
+                  <button type="button" class="stepper-btn stepper-down" tabindex="-1" aria-label="Decrease">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="edit-height">Window Height (px)</label>
+              <div class="modern-number-stepper">
+                <input type="number" id="edit-height" step="50" min="300" max="2160">
+                <div class="stepper-controls">
+                  <button type="button" class="stepper-btn stepper-up" tabindex="-1" aria-label="Increase">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                  </button>
+                  <button type="button" class="stepper-btn stepper-down" tabindex="-1" aria-label="Decrease">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-domains">Allowed Domains</label>
+            <input type="text" id="edit-domains" placeholder="domain1.com, domain2.com">
+          </div>
+        </div>
+
+        <!-- Modal Tab 2: Plugins & Themes Studio -->
+        <div class="modal-tab-view" id="modal-tab-scripts">
+          <div class="extension-studio-container">
+            <div class="studio-topbar">
+              <div class="studio-subtabs">
+                <button type="button" class="studio-subtab active" data-studiotab="plugin" id="tab-btn-app-plugins">Plugins (JS) (0)</button>
+                <button type="button" class="studio-subtab" data-studiotab="theme" id="tab-btn-app-themes">Themes (CSS) (0)</button>
+              </div>
+              <div class="studio-actions">
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-app-attach-registry">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon">
+                    <path d="M12 5v14M5 12h14"></path>
+                  </svg>
+                  <span>Attach from Registry</span>
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-app-add-custom">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  <span>Add Custom</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="studio-layout">
+              <!-- Left Column: Attached Extensions List with Reorder Controls -->
+              <div class="studio-list-pane">
+                <div class="studio-list-header">
+                  <span id="studio-list-title">Active Plugins</span>
+                  <span class="studio-hint">Drag cards to reorder sequence</span>
+                </div>
+                <div class="studio-items-scroll" id="studio-items-list">
+                  <!-- Dynamically populated -->
+                </div>
+              </div>
+
+              <!-- Right Column: Selected Extension Code & Details -->
+              <div class="studio-editor-pane" id="studio-editor-pane">
+                <div class="studio-editor-empty" id="studio-editor-empty">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="16 18 22 12 16 6"></polyline>
+                    <polyline points="8 6 2 12 8 18"></polyline>
+                  </svg>
+                  <p>Select an extension from the list or attach a new one from the Registry.</p>
+                </div>
+                <div class="studio-editor-active hidden" id="studio-editor-active">
+                  <div class="studio-item-meta">
+                    <div class="form-group flex-1">
+                      <label for="studio-item-name">Extension Name</label>
+                      <input type="text" id="studio-item-name">
+                    </div>
+                    <div class="studio-badge-row">
+                      <span class="tag-badge" id="studio-item-source-badge">Registry Item</span>
+                      <span class="tag-badge active-blue" id="studio-item-order-badge">Executes #1</span>
+                    </div>
+                  </div>
+                  <div class="form-group flex-1">
+                    <div class="label-with-actions">
+                      <label>Source Code</label>
+                      <div class="editor-quick-actions" id="studio-snippets-bar">
+                        <button type="button" class="btn-snippet" data-snippet="log">Log Info</button>
+                        <button type="button" class="btn-snippet" data-snippet="dark">Dark Theme Helper</button>
+                        <button type="button" class="btn-snippet" data-snippet="hide-scroll">Hide Scrollbars</button>
+                      </div>
+                    </div>
+                    <div id="monaco-studio-editor" class="monaco-editor-box"></div>
+                    <input type="hidden" id="studio-item-code">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div class="modal-footer-left">
+          <button type="button" class="btn btn-utility" id="btn-modal-open-folder" title="Open app storage and cache directory">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>App Folder</span>
+          </button>
+          <button type="button" class="btn btn-utility text-danger" id="btn-modal-clear-cache" title="Clear cookies and session data">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            <span>Clear Cache</span>
+          </button>
+          <button type="button" class="btn btn-utility" id="btn-modal-reinstall" title="Refresh icon and desktop launcher">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon">
+              <path d="M23 4v6h-6"></path>
+              <path d="M1 20v-6h6"></path>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            <span>Reinstall</span>
+          </button>
+        </div>
+        <div class="modal-footer-right">
+          <button type="button" class="btn btn-secondary" id="btn-modal-cancel">Cancel</button>
+          <button type="button" class="btn btn-primary" id="btn-modal-save">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Save & Apply</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Registry Extension Editor Modal -->
+  <div id="modal-extension" class="modal-overlay hidden">
+    <div class="modal-dialog modal-dialog-md">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-ext-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+              <path d="M2 17l10 5 10-5"></path>
+              <path d="M2 12l10 5 10-5"></path>
+            </svg>
+          </div>
+          <div>
+            <h2 id="modal-ext-title">New Extension</h2>
+            <span id="modal-ext-subtitle" class="modal-app-url">Add a modular plugin or theme to the registry</span>
+          </div>
+        </div>
+        <button class="modal-close" id="btn-modal-ext-close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="ext-form-id">
+        <input type="hidden" id="ext-form-is-builtin">
+
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label for="ext-form-name">Extension Name <span class="required">*</span></label>
+            <input type="text" id="ext-form-name" placeholder="e.g. Dark Theme Enhancer" required>
+          </div>
+          <div class="form-group flex-1">
+            <label for="ext-form-category">Type</label>
+            <div class="custom-dropdown" id="dropdown-ext-category" data-value="plugin">
+              <input type="hidden" id="ext-form-category" value="plugin">
+              <button type="button" class="dropdown-trigger" id="dropdown-trigger-ext-category" aria-haspopup="listbox" aria-expanded="false">
+                <div class="dropdown-trigger-content">
+                  <span class="dropdown-badge-icon badge-js" id="dropdown-active-icon">JS</span>
+                  <span class="dropdown-selected-label" id="dropdown-active-label">Plugin (JavaScript)</span>
+                </div>
+                <svg class="dropdown-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+              <div class="dropdown-menu hidden" id="dropdown-menu-ext-category" role="listbox">
+                <div class="dropdown-option selected" data-value="plugin" role="option">
+                  <span class="dropdown-badge-icon badge-js">JS</span>
+                  <div class="dropdown-option-info">
+                    <span class="option-title">Plugin (JavaScript)</span>
+                    <span class="option-sub">Executes DOM manipulation and logic</span>
+                  </div>
+                  <svg class="option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <div class="dropdown-option" data-value="theme" role="option">
+                  <span class="dropdown-badge-icon badge-css">CSS</span>
+                  <div class="dropdown-option-info">
+                    <span class="option-title">Theme (CSS)</span>
+                    <span class="option-sub">Custom stylesheet and layout overrides</span>
+                  </div>
+                  <svg class="option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="ext-form-desc">Description</label>
+          <input type="text" id="ext-form-desc" placeholder="Brief summary of what this extension modifies...">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="ext-form-author">Author</label>
+            <input type="text" id="ext-form-author" placeholder="Your name or organization">
+          </div>
+          <div class="form-group flex-1">
+            <label for="ext-form-version">Version</label>
+            <input type="text" id="ext-form-version" placeholder="1.0.0">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label-with-actions">
+            <label>Source Code <span class="required">*</span></label>
+            <div class="editor-quick-actions" id="ext-snippets-bar">
+              <button type="button" class="btn-snippet" data-snippet="log">Log Info</button>
+              <button type="button" class="btn-snippet" data-snippet="dark">Dark Theme Helper</button>
+              <button type="button" class="btn-snippet" data-snippet="hide-scroll">Hide Scrollbars</button>
+            </div>
+          </div>
+          <div id="monaco-ext-editor" class="monaco-editor-box"></div>
+          <input type="hidden" id="ext-form-content">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div class="modal-footer-left">
+          <button type="button" class="btn btn-secondary text-danger hidden" id="btn-ext-delete">Delete</button>
+        </div>
+        <div class="modal-footer-right">
+          <button type="button" class="btn btn-secondary" id="btn-ext-cancel">Cancel</button>
+          <button type="button" class="btn btn-primary" id="btn-ext-save">Save Extension</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attach from Registry Picker Modal -->
+  <div id="modal-attach-picker" class="modal-overlay hidden">
+    <div class="modal-dialog modal-dialog-sm">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div>
+            <h2 id="modal-picker-title">Attach from Registry</h2>
+            <span class="modal-app-url" id="modal-picker-desc">Pick an installed extension to add to this app</span>
+          </div>
+        </div>
+        <button class="modal-close" id="btn-picker-close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="picker-search-wrap">
+          <input type="text" id="picker-search-input" placeholder="Search installed registry extensions..." autocomplete="off">
+        </div>
+        <div class="picker-list-container" id="picker-items-list">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div class="modal-footer-right">
+          <button type="button" class="btn btn-secondary" id="btn-picker-cancel">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Marketplace Code Preview Modal -->
+  <div id="modal-marketplace-preview" class="modal-overlay hidden">
+    <div class="modal-dialog modal-dialog-md">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div>
+            <h2 id="market-preview-title">Extension Preview</h2>
+            <span id="market-preview-meta" class="modal-app-url">by Author • v1.0.0</span>
+          </div>
+        </div>
+        <button class="modal-close" id="btn-market-preview-close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <p id="market-preview-desc" style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 12px; line-height: 1.45;"></p>
+        <div id="monaco-market-preview" class="monaco-editor-box" style="height: 340px;"></div>
+      </div>
+
+      <div class="modal-footer">
+        <div class="modal-footer-left">
+          <span class="tag-badge" id="market-preview-badge">Plugin</span>
+        </div>
+        <div class="modal-footer-right">
+          <button type="button" class="btn btn-secondary" id="btn-market-preview-cancel">Close</button>
+          <button type="button" class="btn btn-primary" id="btn-market-preview-install">Install to Registry</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="vendor/monaco/monaco.bundle.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

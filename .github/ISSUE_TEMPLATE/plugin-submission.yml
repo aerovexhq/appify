@@ -1,0 +1,72 @@
+name: "🧩 Plugin Submission"
+description: "Submit a community JavaScript plugin to be reviewed and hosted on the Appify CDN"
+title: "[Plugin]: "
+labels: ["marketplace", "plugin"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for contributing to the Appify Community Marketplace!
+        All submissions are manually reviewed, tested for security, and deployed to `cdn.appify.aerovex.net`.
+  - type: input
+    id: name
+    attributes:
+      label: Plugin Name
+      description: A friendly name for your plugin (e.g., "YouTube Ambient Enhancer").
+      placeholder: "e.g. GitHub Wide Diffs"
+    validations:
+      required: true
+  - type: input
+    id: id
+    attributes:
+      label: Unique Identifier
+      description: Lowercase alphanumeric ID with hyphens (e.g., "github-wide-diffs").
+      placeholder: "e.g. github-wide-diffs"
+    validations:
+      required: true
+  - type: input
+    id: author
+    attributes:
+      label: Author Name / GitHub Handle
+      placeholder: "@yourusername"
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: input
+    id: target_domains
+    attributes:
+      label: Target Domains / URLs
+      description: Comma-separated domains where this plugin should run (use "*" for universal).
+      placeholder: "e.g. github.com, gist.github.com"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Briefly explain what this plugin does and how it helps users.
+    validations:
+      required: true
+  - type: textarea
+    id: code
+    attributes:
+      label: JavaScript Source Code
+      description: Paste the complete, clean JavaScript code for your plugin.
+      render: javascript
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Verification & Security
+      options:
+        - label: I confirm this plugin contains no malicious code, cryptocurrency miners, telemetry trackers, or obfuscated logic.
+          required: true
+        - label: I confirm this code is open-source under MIT or Apache 2.0 license.
+          required: true

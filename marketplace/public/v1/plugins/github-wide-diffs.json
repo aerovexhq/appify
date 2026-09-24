@@ -1,0 +1,26 @@
+{
+  "id": "github-wide-diffs",
+  "name": "GitHub Wide Diffs",
+  "description": "Expands GitHub diffs, pull request code viewers, and table containers across the full screen width.",
+  "category": "plugin",
+  "author": "Aerovex",
+  "author_url": "https://github.com/aerovexsim",
+  "version": "1.0.0",
+  "target_domains": [
+    "github.com"
+  ],
+  "tags": [
+    "github",
+    "developer",
+    "layout",
+    "productive"
+  ],
+  "icon": null,
+  "sha256": "f29494b9167f26abcde0a81993cce43eb384897e13d0e31b1257c084f1cadd81",
+  "size_bytes": 594,
+  "download_url": "https://cdn.appify.aerovex.net/v1/plugins/github-wide-diffs.js",
+  "preview_code": "// GitHub Wide Diffs Plugin for Appify\n(function () {\n  const applyWideLayout = () => {\n    const containers = document.querySelectorAll(\n      \".container-xl, .container-lg, .diff-view, .pull-request-tab-content\"\n    );\n    containers.forEach((el) => {\n      el.style.setProperty(\"max-width\", \"98%\", \"important\");\n      el.style.setProperty(\"width\", \"98%\", \"important\");\n    });\n  };\n\n  window.addEventListener(\"load\", applyWideLayout);\n  const observer = new MutationObserver(applyWideLayout);\n  observer.observe(document.body, { childList: true, subtree: true });\n  applyWideLayout();\n})();\n",
+  "code_content": "// GitHub Wide Diffs Plugin for Appify\n(function () {\n  const applyWideLayout = () => {\n    const containers = document.querySelectorAll(\n      \".container-xl, .container-lg, .diff-view, .pull-request-tab-content\"\n    );\n    containers.forEach((el) => {\n      el.style.setProperty(\"max-width\", \"98%\", \"important\");\n      el.style.setProperty(\"width\", \"98%\", \"important\");\n    });\n  };\n\n  window.addEventListener(\"load\", applyWideLayout);\n  const observer = new MutationObserver(applyWideLayout);\n  observer.observe(document.body, { childList: true, subtree: true });\n  applyWideLayout();\n})();\n",
+  "created_at": "2026-09-22T17:00:40.983Z",
+  "updated_at": "2026-09-22T17:00:40.983Z"
+}

@@ -1,0 +1,27 @@
+{
+  "id": "oled-true-black",
+  "name": "OLED True Black",
+  "description": "Transforms dark-gray web app backgrounds into pure #000000 black to maximize contrast and battery life on OLED screens.",
+  "category": "theme",
+  "author": "Aerovex",
+  "author_url": "https://github.com/aerovexsim",
+  "version": "1.0.0",
+  "target_domains": [
+    "*"
+  ],
+  "tags": [
+    "oled",
+    "black",
+    "battery",
+    "dark",
+    "universal"
+  ],
+  "icon": null,
+  "sha256": "c938127b0af57dc8a8b0065c2923dcebe11708a63d8894ed7be051f680419a1c",
+  "size_bytes": 216,
+  "download_url": "https://cdn.appify.aerovex.net/v1/themes/oled-true-black.css",
+  "preview_code": "/* OLED True Black Theme for Appify */\nhtml, body {\n  background-color: #000000 !important;\n  color: #f1f5f9 !important;\n}\n\n[class*=\"dark\"], [data-theme=\"dark\"], body.dark {\n  background-color: #000000 !important;\n}\n",
+  "code_content": "/* OLED True Black Theme for Appify */\nhtml, body {\n  background-color: #000000 !important;\n  color: #f1f5f9 !important;\n}\n\n[class*=\"dark\"], [data-theme=\"dark\"], body.dark {\n  background-color: #000000 !important;\n}\n",
+  "created_at": "2026-09-22T17:00:40.986Z",
+  "updated_at": "2026-09-22T17:00:40.986Z"
+}

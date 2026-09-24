@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Appify Official Documentation
+    url: https://appify.aerovex.net
+    about: Read guides, architecture, CLI cheat sheets, and marketplace documentation.
+  - name: 🌐 Appify Community Marketplace CDN
+    url: https://cdn.appify.aerovex.net/v1/marketplace.json
+    about: View the raw live JSON catalog of published community extensions.

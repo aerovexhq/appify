@@ -1,0 +1,117 @@
+{
+  "version": "1.0.0",
+  "cdn_base": "https://cdn.appify.aerovex.net",
+  "generated_at": "2026-09-22T17:00:40.992Z",
+  "total_items": 4,
+  "plugins_count": 2,
+  "themes_count": 2,
+  "items": [
+    {
+      "id": "github-wide-diffs",
+      "name": "GitHub Wide Diffs",
+      "description": "Expands GitHub diffs, pull request code viewers, and table containers across the full screen width.",
+      "category": "plugin",
+      "author": "Aerovex",
+      "author_url": "https://github.com/aerovexsim",
+      "version": "1.0.0",
+      "target_domains": [
+        "github.com"
+      ],
+      "tags": [
+        "github",
+        "developer",
+        "layout",
+        "productive"
+      ],
+      "icon": null,
+      "sha256": "f29494b9167f26abcde0a81993cce43eb384897e13d0e31b1257c084f1cadd81",
+      "size_bytes": 594,
+      "download_url": "https://cdn.appify.aerovex.net/v1/plugins/github-wide-diffs.js",
+      "preview_code": "// GitHub Wide Diffs Plugin for Appify\n(function () {\n  const applyWideLayout = () => {\n    const containers = document.querySelectorAll(\n      \".container-xl, .container-lg, .diff-view, .pull-request-tab-content\"\n    );\n    containers.forEach((el) => {\n      el.style.setProperty(\"max-width\", \"98%\", \"important\");\n      el.style.setProperty(\"width\", \"98%\", \"important\");\n    });\n  };\n\n  window.addEventListener(\"load\", applyWideLayout);\n  const observer = new MutationObserver(applyWideLayout);\n  observer.observe(document.body, { childList: true, subtree: true });\n  applyWideLayout();\n})();\n",
+      "code_content": "// GitHub Wide Diffs Plugin for Appify\n(function () {\n  const applyWideLayout = () => {\n    const containers = document.querySelectorAll(\n      \".container-xl, .container-lg, .diff-view, .pull-request-tab-content\"\n    );\n    containers.forEach((el) => {\n      el.style.setProperty(\"max-width\", \"98%\", \"important\");\n      el.style.setProperty(\"width\", \"98%\", \"important\");\n    });\n  };\n\n  window.addEventListener(\"load\", applyWideLayout);\n  const observer = new MutationObserver(applyWideLayout);\n  observer.observe(document.body, { childList: true, subtree: true });\n  applyWideLayout();\n})();\n",
+      "created_at": "2026-09-22T17:00:40.983Z",
+      "updated_at": "2026-09-22T17:00:40.983Z"
+    },
+    {
+      "id": "nord-frost",
+      "name": "Nord Frost Theme",
+      "description": "Applies an arctic, north-bluish palette with smooth contrast and clean cool-gray accents.",
+      "category": "theme",
+      "author": "Aerovex",
+      "author_url": "https://github.com/aerovexsim",
+      "version": "1.0.0",
+      "target_domains": [
+        "*"
+      ],
+      "tags": [
+        "nord",
+        "frost",
+        "palette",
+        "aesthetic",
+        "universal"
+      ],
+      "icon": null,
+      "sha256": "a5c59615fa44bec02d6e9beb74460159b71f5c50b195cce8abe630544cc85b31",
+      "size_bytes": 361,
+      "download_url": "https://cdn.appify.aerovex.net/v1/themes/nord-frost.css",
+      "preview_code": "/* Nord Frost Arctic Theme for Appify */\n:root {\n  --nord0: #2e3440;\n  --nord1: #3b4252;\n  --nord2: #434c5e;\n  --nord3: #4c566a;\n  --nord4: #d8dee9;\n  --nord5: #e5e9f0;\n  --nord6: #eceff4;\n  --nord7: #8fbcbb;\n  --nord8: #88c0d0;\n  --nord9: #81a1c1;\n  --nord10: #5e81ac;\n}\n\nbody {\n  background-color: var(--nord0) !important;\n  color: var(--nord6) !important;\n}\n",
+      "code_content": "/* Nord Frost Arctic Theme for Appify */\n:root {\n  --nord0: #2e3440;\n  --nord1: #3b4252;\n  --nord2: #434c5e;\n  --nord3: #4c566a;\n  --nord4: #d8dee9;\n  --nord5: #e5e9f0;\n  --nord6: #eceff4;\n  --nord7: #8fbcbb;\n  --nord8: #88c0d0;\n  --nord9: #81a1c1;\n  --nord10: #5e81ac;\n}\n\nbody {\n  background-color: var(--nord0) !important;\n  color: var(--nord6) !important;\n}\n",
+      "created_at": "2026-09-22T17:00:40.985Z",
+      "updated_at": "2026-09-22T17:00:40.985Z"
+    },
+    {
+      "id": "oled-true-black",
+      "name": "OLED True Black",
+      "description": "Transforms dark-gray web app backgrounds into pure #000000 black to maximize contrast and battery life on OLED screens.",
+      "category": "theme",
+      "author": "Aerovex",
+      "author_url": "https://github.com/aerovexsim",
+      "version": "1.0.0",
+      "target_domains": [
+        "*"
+      ],
+      "tags": [
+        "oled",
+        "black",
+        "battery",
+        "dark",
+        "universal"
+      ],
+      "icon": null,
+      "sha256": "c938127b0af57dc8a8b0065c2923dcebe11708a63d8894ed7be051f680419a1c",
+      "size_bytes": 216,
+      "download_url": "https://cdn.appify.aerovex.net/v1/themes/oled-true-black.css",
+      "preview_code": "/* OLED True Black Theme for Appify */\nhtml, body {\n  background-color: #000000 !important;\n  color: #f1f5f9 !important;\n}\n\n[class*=\"dark\"], [data-theme=\"dark\"], body.dark {\n  background-color: #000000 !important;\n}\n",
+      "code_content": "/* OLED True Black Theme for Appify */\nhtml, body {\n  background-color: #000000 !important;\n  color: #f1f5f9 !important;\n}\n\n[class*=\"dark\"], [data-theme=\"dark\"], body.dark {\n  background-color: #000000 !important;\n}\n",
+      "created_at": "2026-09-22T17:00:40.986Z",
+      "updated_at": "2026-09-22T17:00:40.986Z"
+    },
+    {
+      "id": "youtube-ambient-control",
+      "name": "YouTube Ambient Enhancer",
+      "description": "Optimizes playback performance by dampening high-GPU cinematic ambient glows and improving video framing.",
+      "category": "plugin",
+      "author": "Aerovex",
+      "author_url": "https://github.com/aerovexsim",
+      "version": "1.0.0",
+      "target_domains": [
+        "youtube.com",
+        "music.youtube.com"
+      ],
+      "tags": [
+        "youtube",
+        "video",
+        "performance",
+        "media"
+      ],
+      "icon": null,
+      "sha256": "0bfab71e81a3d9aeb80b64f57b8f4e4aff1c1cb6ab73ff03c8d77bcd6591a4d1",
+      "size_bytes": 352,
+      "download_url": "https://cdn.appify.aerovex.net/v1/plugins/youtube-ambient-control.js",
+      "preview_code": "// YouTube Ambient Enhancer Plugin for Appify\n(function () {\n  const optimizePlayer = () => {\n    const ambient = document.getElementById(\"cinematic-container\");\n    if (ambient) {\n      ambient.style.setProperty(\"display\", \"none\", \"important\");\n    }\n  };\n\n  window.addEventListener(\"load\", optimizePlayer);\n  setInterval(optimizePlayer, 2000);\n})();\n",
+      "code_content": "// YouTube Ambient Enhancer Plugin for Appify\n(function () {\n  const optimizePlayer = () => {\n    const ambient = document.getElementById(\"cinematic-container\");\n    if (ambient) {\n      ambient.style.setProperty(\"display\", \"none\", \"important\");\n    }\n  };\n\n  window.addEventListener(\"load\", optimizePlayer);\n  setInterval(optimizePlayer, 2000);\n})();\n",
+      "created_at": "2026-09-22T17:00:40.984Z",
+      "updated_at": "2026-09-22T17:00:40.984Z"
+    }
+  ]
+}

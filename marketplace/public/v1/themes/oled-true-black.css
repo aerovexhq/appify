@@ -1,0 +1,9 @@
+/* OLED True Black Theme for Appify */
+html, body {
+  background-color: #000000 !important;
+  color: #f1f5f9 !important;
+}
+
+[class*="dark"], [data-theme="dark"], body.dark {
+  background-color: #000000 !important;
+}

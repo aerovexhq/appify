@@ -1,0 +1,72 @@
+name: "🎨 Theme Submission"
+description: "Submit a community CSS theme to be reviewed and hosted on the Appify CDN"
+title: "[Theme]: "
+labels: ["marketplace", "theme"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for contributing to the Appify Community Marketplace!
+        All submissions are manually reviewed, tested for visual consistency, and deployed to `cdn.appify.aerovex.net`.
+  - type: input
+    id: name
+    attributes:
+      label: Theme Name
+      description: A friendly name for your theme (e.g., "Nord Frost Theme").
+      placeholder: "e.g. OLED True Black"
+    validations:
+      required: true
+  - type: input
+    id: id
+    attributes:
+      label: Unique Identifier
+      description: Lowercase alphanumeric ID with hyphens (e.g., "oled-true-black").
+      placeholder: "e.g. oled-true-black"
+    validations:
+      required: true
+  - type: input
+    id: author
+    attributes:
+      label: Author Name / GitHub Handle
+      placeholder: "@yourusername"
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: input
+    id: target_domains
+    attributes:
+      label: Target Domains / URLs
+      description: Comma-separated domains where this theme applies (use "*" for universal).
+      placeholder: "e.g. web.whatsapp.com, discord.com or *"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Briefly explain the visual style, colors, and layout enhancements this theme provides.
+    validations:
+      required: true
+  - type: textarea
+    id: code
+    attributes:
+      label: CSS Stylesheet Code
+      description: Paste the complete, clean CSS code for your theme.
+      render: css
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Verification & Security
+      options:
+        - label: I confirm this theme contains no malicious code or external asset exploits.
+          required: true
+        - label: I confirm this theme is open-source under MIT or Apache 2.0 license.
+          required: true

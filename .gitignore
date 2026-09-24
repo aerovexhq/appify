@@ -2,3 +2,9 @@
 .vscode
 /target/
 /gen/schemas
+node_modules/
+.vitepress/cache/
+.vitepress/dist/
+dist/
+*.log
+

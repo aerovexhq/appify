@@ -9,25 +9,56 @@ in the app window.
 
 ## Features
 
-* **Isolated storage** — every app gets its own profile directory, keyed by a hash of its URL, so sessions
-  never leak between apps or your regular browser.
-* **Smart link routing** — navigation within the app's domain stays in the window; anything else (external
-  links, `blob:`/`data:` URLs aside) is sent to your default browser instead.
-* **Automatic icon fetching** — scrapes the target site for its best available icon (Apple touch icon first,
-  falling back to other `<link rel="icon">` tags, then `favicon.ico`) and uses it as the window/launcher icon.
-* **Built-in aliases** — short names for popular services (WhatsApp, Discord, Telegram, Spotify, Netflix,
-  YouTube, X, Reddit, ChatGPT, Notion, Figma, Gmail) that resolve to the right URL and a sensible default name.
-* **Custom window identity** — override the display name, window class (`--wm-class`), and icon (`--icon`) per app.
-* **Native desktop integration (Linux)** — `install` writes a `.desktop` launcher and icon so the app shows up
-  in your application menu like any other program.
+* **Modern Embedded GUI Manager** — launch `appify` or `appify ui` to open a sleek, OS-independent glassmorphic management dashboard to browse presets, manage installed apps, reconfigure settings, and edit scripts.
+* **Curated Preset Store** — one-click and single-command installation for optimized presets (**WhatsApp** and **Discord**) with pre-tuned domains, window dimensions, single-instance locks, and tray behavior.
+* **User Scripts & Styles Injection** — customize web apps using `--inject-js` and `--inject-css` (or drop `userscript.js` / `userstyle.css` directly into the app profile, or edit them live in the GUI Manager). Zero-FOUC native injection on Linux via WebKit UserStyleSheet.
+* **Live Reconfiguration** — tweak window dimensions, zoom, tray settings, autostart, and injected scripts (`appify configure <app> ...` or via GUI) without wiping session logins or cookies.
+* **Cache Management** — reset corrupted browser cache and cookies with `appify clear-cache <app>` while safely preserving app configuration, desktop shortcuts, and custom scripts.
+* **Isolated storage** — every app gets its own profile directory, keyed by a SHA-256 hash of its URL, so sessions never leak between apps or your regular browser.
+* **Clipboard Image Pasting** — native Linux/WebKitGTK clipboard bridge ensuring images copied from screenshots, image editors, or file managers paste seamlessly into web apps (WhatsApp, Discord, etc.).
+* **DevTools & Inspection** — press <kbd>F12</kbd> or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd>/<kbd>C</kbd>/<kbd>J</kbd>, or right-click to inspect, or use the system tray menu to toggle developer tools.
+* **Smart link routing** — navigation within the app's domain stays in the window; external links open in your default browser.
+* **Automatic icon fetching** — scrapes high-resolution square icons and converts them to crisp PNG desktop launcher icons.
+* **Native desktop integration** — generates `.desktop` launchers, icon caches, and system autostart entries (`~/.config/autostart`).
 
 ---
 
 ## Installation
 
-### Quick Install (Linux & macOS)
+### Setup Wizards & Installers (Recommended)
 
-Install the latest release with a single command:
+Appify provides native installation wizards and packages for all major operating systems. Grab the appropriate installer from the latest [GitHub Releases](../../releases):
+
+#### Windows
+* **[Setup Wizard (`.exe`)](../../releases/latest)** — Interactive NSIS setup wizard that installs Appify, creates Start Menu and Desktop shortcuts, adds Appify to your user `PATH`, and includes a clean uninstaller.
+* **[Windows Installer (`.msi`)](../../releases/latest)** — Standard WiX MSI package designed for system administrators and enterprise deployment.
+
+#### macOS
+* **[Apple Disk Image (`.dmg`)](../../releases/latest)** — Visual setup wizard with drag-to-Applications layout:
+  * **Apple Silicon (M1/M2/M3/M4):** `appify_*_aarch64.dmg`
+  * **Intel:** `appify_*_x64.dmg`
+* **Application Bundle (`.app.tar.gz`)** — Pre-packaged `.app` bundle.
+
+#### Linux
+* **[Debian / Ubuntu (`.deb`)](../../releases/latest)** — Native package for Ubuntu, Debian, Linux Mint, Pop!_OS, and elementary OS:
+  ```bash
+  sudo apt install ./appify_*_amd64.deb
+  ```
+* **[Universal AppImage (`.AppImage`)](../../releases/latest)** — Portable, self-contained executable that runs on any modern Linux distribution without installation:
+  ```bash
+  chmod +x appify_*_amd64.AppImage
+  ./appify_*_amd64.AppImage
+  ```
+* **[Fedora / RHEL / openSUSE (`.rpm`)](../../releases/latest)** — Native RPM package:
+  ```bash
+  sudo dnf install ./appify-*.x86_64.rpm
+  ```
+
+---
+
+### Quick CLI Install (Linux & macOS)
+
+If you prefer installing directly from your terminal:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/larvance/tauri-appify/main/install.sh | bash
@@ -37,64 +68,15 @@ This automatically detects your OS and CPU architecture, downloads the latest bi
 
 ---
 
-### Manual Download
+### Portable Standalone Binaries
 
-Appify is a single self-contained binary — no runtime dependencies to install once you have it in hand.
-Grab one from [Releases](../../releases) instead of building it yourself, unless you need a platform/
-architecture that isn't published there, in which case see [Build from source](#build-from-source).
+If you prefer a single portable executable without running an installer, download the plain binary for your platform from [Releases](../../releases):
+* Linux: `appify_linux_x64`
+* macOS (Apple Silicon): `appify_darwin_aarch64`
+* macOS (Intel): `appify_darwin_x64`
+* Windows: `appify_windows_x64.exe`
 
-> **Automatic Persistence:** Even if you just download the binary to your `~/Downloads` folder and run it (e.g. `./appify_linux_x64 install whatsapp` or `./appify_linux_x64 self-install`), Appify automatically relocates itself to your persistent user binary directory (`~/.local/bin/appify` on Linux/macOS) and registers desktop entries to that permanent location. Clearing your `Downloads` folder will never break your installed desktop web apps.
-
-### Linux
-
-```bash
-# Download the release asset for your architecture (e.g. appify_linux_x64), then:
-mkdir -p ~/.local/bin
-mv appify_linux_x64 ~/.local/bin/appify
-chmod +x ~/.local/bin/appify
-```
-
-`~/.local/bin` is part of the XDG base directory spec and is already on `PATH` by default on Ubuntu and most
-modern distros — no extra setup needed. If `appify` isn't found after this, add it yourself:
-
-```bash
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-source ~/.bashrc
-```
-
-### macOS
-
-```bash
-# Download the release asset for your chip:
-#   Apple Silicon: appify_darwin_aarch64
-#   Intel:         appify_darwin_x64
-sudo mv appify_darwin_<arch> /usr/local/bin/appify
-sudo chmod +x /usr/local/bin/appify
-```
-
-`/usr/local/bin` is a standard Unix location that's on `PATH` by default on macOS, with or without Homebrew.
-
-Because the binary isn't notarized by Apple, Gatekeeper will refuse to run it on first launch ("cannot be
-opened because the developer cannot be verified"). Clear the quarantine flag once, after copying it in:
-
-```bash
-xattr -d com.apple.quarantine /usr/local/bin/appify
-```
-
-### Windows
-
-1. Download the `appify_windows_x64.exe` release asset for your system.
-2. Create a folder to hold it, e.g. `%USERPROFILE%\bin`, and move the file there as `appify.exe`.
-3. Add that folder to your user `PATH` (one-time):
-   ```powershell
-   setx PATH "%PATH%;%USERPROFILE%\bin"
-   ```
-   Or via the GUI: **Settings → System → About → Advanced system settings → Environment Variables**, edit
-   the `Path` variable under "User variables", and add the folder.
-4. Open a **new** terminal window for the `PATH` change to take effect.
-
-Since the binary is unsigned, Windows SmartScreen may show a warning the first time you run it. Click
-**More info → Run anyway** to proceed.
+> **Automatic Persistence:** Even if you download the binary to your `~/Downloads` folder and run it (e.g. `./appify_linux_x64 install whatsapp` or `./appify_linux_x64 self-install`), Appify automatically relocates itself to your persistent user binary directory (`~/.local/bin/appify` on Linux/macOS) and registers desktop entries to that permanent location. Clearing your `Downloads` folder will never break your installed desktop web apps.
 
 ---
 
@@ -146,34 +128,54 @@ cd tauri-appify
 cargo build --release
 ```
 
-Then place the resulting binary in the same location described in [Installation](#installation) for your OS
-(e.g. on Linux: `mkdir -p ~/.local/bin && cp target/release/appify ~/.local/bin/`).
-
-> **Note:** `install` currently generates a Linux-style `.desktop` entry only, regardless of what platform you
-> build on — see [Platform support](#platform-support).
+Then place the resulting binary in `~/.local/bin/appify` (or run `cargo run --release -- self-install`).
 
 ---
 
 ## Usage
 
-```text
-appify install <URL or alias> [NAME] [OPTIONS]
-appify run     <URL or alias> [NAME] [OPTIONS]
-appify uninstall <URL or alias>
-appify list
-appify self-install
+### Graphical Manager (GUI)
+
+Simply run `appify` with no arguments, or click the **Appify** launcher in your application menu:
+
+```bash
+appify
+# or
+appify ui
 ```
 
-* `install` — writes a desktop launcher so the app is available from your app menu, and downloads/caches its icon. Persists any runtime options into the desktop launcher. Automatically ensures `appify` is installed to `~/.local/bin/appify`.
-* `run` — opens the app directly in an isolated window without touching your desktop launchers (useful for
-  testing, or as the command the generated `.desktop` file itself calls).
-* `uninstall` — removes the launcher, icon, and cached session profile for a given app.
-* `list` — prints every app currently installed via Appify.
-* `self-install` — installs the `appify` binary itself to `~/.local/bin/appify` (or system PATH).
+This launches the Appify Management UI where you can:
+* Browse and install curated presets (**WhatsApp**, **Discord**).
+* View all installed apps with live status indicators.
+* Reconfigure window sizes, zoom, autostart, and tray behavior on the fly.
+* Write and test custom user scripts (JavaScript) and custom styles (CSS) with live code editors.
+* Clear session caches without losing your configurations.
+* Install custom web apps by entering a URL and friendly name.
+
+---
+
+### Command-Line Interface (CLI)
+
+```text
+appify [COMMAND]
+
+Commands:
+  ui, gui             Launch the Appify Manager GUI (default if no command given)
+  preset list         Browse built-in curated app presets
+  preset install      Install a preset by name (e.g. whatsapp, discord)
+  install             Install a custom website or alias as a desktop app
+  run                 Run a web app directly in an isolated window without installing
+  configure           Reconfigure settings or scripts for an installed app without losing data
+  reinstall           Re-generate launcher and icon from fresh web scrape
+  clear-cache         Clear session cookies and webview cache while preserving config
+  uninstall           Remove app desktop entry, icons, autostart, and profile data
+  list                List all currently installed apps
+  self-install        Install appify binary to ~/.local/bin and register manager desktop entry
+```
 
 ### Options & Flags
 
-Both `install` and `run` accept the following customization options (when passed to `install`, they are automatically serialized into the `.desktop` launcher):
+The `install`, `run`, and `configure` commands accept the following flags:
 
 | Option | Description |
 |---|---|
@@ -186,84 +188,83 @@ Both `install` and `run` accept the following customization options (when passed
 | `--maximize` | Launches the app in a maximized window. |
 | `--zoom <ZOOM>` | Initial webview zoom scale factor (e.g. `1.1`, `0.9`). |
 | `--user-agent <UA>` | Custom browser User-Agent string. |
-| `--width <WIDTH>` | Initial window width in pixels. |
-| `--height <HEIGHT>` | Initial window height in pixels. |
-| `-a, --allow-domain <DOMAIN>` | Additional internal domains to keep in-app (e.g. `-a whatsapp.net`). Can be repeated. |
+| `--width <WIDTH>` | Initial window width in pixels (e.g. `1280`). |
+| `--height <HEIGHT>` | Initial window height in pixels (e.g. `850`). |
+| `-a, --allow-domain <DOMAIN>` | Additional internal domains to keep in-app (e.g. `-a cdn.discordapp.com`). Can be repeated. |
 | `--wm-class <CLASS>` | Custom window class / App ID for desktop grouping and dock matching. |
 | `--icon <PATH_OR_URL>` | Custom window and desktop launcher icon. |
+| `--inject-js <JS>` | Custom JavaScript string or path to `.js` file to inject on app load. |
+| `--inject-css <CSS>` | Custom CSS string or path to `.css` file to inject into the webview. |
 
-### Installing an app
+---
+
+### Presets
+
+List available presets:
+```bash
+appify preset list
+```
+
+Install a preset with its recommended defaults:
+```bash
+appify preset install whatsapp
+appify preset install discord
+```
+
+You can customize presets on install by passing additional flags:
+```bash
+appify preset install whatsapp --autostart-hidden --zoom 1.1
+```
+
+---
+
+### Installing Custom Apps
 
 ```bash
-# Uses the built-in alias, default name "WhatsApp"
-appify install whatsapp
+# Uses built-in alias with sensible defaults
+appify install telegram
 
-# Complete messenger setup: autostarts silently into tray on boot, single instance, close hides to tray
+# Messenger app with full background tray and single-instance behavior:
 appify install whatsapp --single-instance --hide-on-close --autostart-hidden
 
-# Override display name and window size
-appify install discord "Discord" --single-instance --width 1280 --height 800
+# Any custom URL with custom window size
+appify install https://github.com "GitHub" --width 1440 --height 900
 
-# Full control: custom name, window class, and icon
-appify install https://mail.google.com "Gmail" --wm-class gmail-app --icon ./gmail.png
+# App with custom script and CSS injection
+appify install https://news.ycombinator.com "HackerNews" \
+  --inject-css "body { font-family: sans-serif !important; max-width: 900px; margin: auto; }" \
+  --inject-js "console.log('Appify custom script loaded');"
 ```
 
-#### Built-in aliases
+---
 
-| Alias           | Target URL                 | Default name |
-|-----------------|----------------------------|--------------|
-| `whatsapp`      | `https://web.whatsapp.com` | WhatsApp     |
-| `discord`       | `https://discord.com/app`  | Discord      |
-| `telegram`      | `https://web.telegram.org` | Telegram     |
-| `spotify`       | `https://open.spotify.com` | Spotify      |
-| `netflix`       | `https://www.netflix.com`  | Netflix      |
-| `youtube`       | `https://youtube.com`      | YouTube      |
-| `twitter` / `x` | `https://x.com`            | X            |
-| `reddit`        | `https://reddit.com`       | Reddit       |
-| `chatgpt`       | `https://chatgpt.com`      | ChatGPT      |
-| `notion`        | `https://notion.so`        | Notion       |
-| `figma`         | `https://figma.com`        | Figma        |
-| `gmail`         | `https://mail.google.com`  | Gmail        |
+### Reconfiguring an Installed App
 
-#### Using any URL
-
-Anything that isn't a recognized alias is treated as a raw URL. `https://` is added automatically if you leave
-off a scheme, and the display name defaults to the hostname if you don't provide one:
+Change zoom, window size, autostart, or scripts without losing your login session or cookies:
 
 ```bash
-# Defaults to display name "github.com"
-appify install github.com
+# Update Discord zoom and add a custom CSS theme
+appify configure discord --zoom 1.1 --inject-css ./my-discord-theme.css
 
-# Explicit display name
-appify install https://github.com "GitHub"
+# Enable autostart in background for WhatsApp
+appify configure whatsapp --autostart-hidden
 ```
 
-If a hostname doesn't look like a valid domain (no dot, and not `localhost`), Appify will reject it with an error.
+---
 
-### Running an app without installing it
+### Clearing Cache
+
+If an app's webview cache gets corrupted or you want to force re-login, clear its cache without deleting its configuration or custom scripts:
 
 ```bash
-appify run discord
-appify run https://linear.app "Linear" --wm-class linear-app
+appify clear-cache discord
 ```
 
-### Listing installed apps
+---
 
-```bash
-appify list
-```
+### Uninstalling an App
 
-```text
-App Name                  | WM_CLASS             | URL
----------------------------------------------------------------------------
-WhatsApp                  | whatsapp-desktop      | https://web.whatsapp.com
-GitHub                    | appify-3f9a2c1b0e4d   | https://github.com
-```
-
-### Uninstalling an app
-
-Pass the same alias or URL you used to install it — Appify re-derives the same identity hash and removes the
-matching launcher, icon, and session profile:
+Pass the same alias, URL, or display name to completely remove the launcher, icon, autostart entry, and isolated profile:
 
 ```bash
 appify uninstall whatsapp

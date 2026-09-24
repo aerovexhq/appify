@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "appify-cdn",
+  "main": "src/index.js",
+  "compatibility_date": "2024-09-23",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+  "routes": [
+    {
+      "pattern": "cdn.appify.aerovex.net/*",
+      "zone_name": "aerovex.net"
+    }
+  ]
+}
