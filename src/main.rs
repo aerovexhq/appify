@@ -467,15 +467,18 @@ fn get_curated_presets() -> Vec<Preset> {
                 "messenger.com",
             ],
             default_inject_css: Some(r#"
-/* Hide 'Get WhatsApp for Mac / Windows' buttons, banners, and download prompts */
-a[href*="/download"],
+/* Hide 'Get WhatsApp for Mac / Windows' desktop app promo banners */
 a[href*="whatsapp.com/download"],
+a[href*="microsoft.com/store"][href*="whatsapp"],
 button[aria-label*="Get WhatsApp" i],
 button[aria-label*="Get the app" i],
 button[title*="Get WhatsApp" i],
 div[aria-label*="Get WhatsApp" i],
 span[aria-label*="Get WhatsApp" i],
-[data-testid*="download" i] {
+div[data-testid*="intro-banner"],
+div[data-testid*="native-desktop-banner"],
+div[data-testid*="desktop-app-banner"],
+div[data-testid*="get-desktop-app"] {
     display: none !important;
 }
 "#),
@@ -483,11 +486,16 @@ span[aria-label*="Get WhatsApp" i],
 (function() {
     function cleanWhatsAppDownloadPromos() {
         var selectors = [
-            'a[href*="download"]',
+            'a[href*="whatsapp.com/download"]',
+            'a[href*="microsoft.com/store"][href*="whatsapp"]',
             'button[aria-label*="Get WhatsApp" i]',
             'button[aria-label*="Get the app" i]',
             'div[aria-label*="Get WhatsApp" i]',
-            'span[aria-label*="Get WhatsApp" i]'
+            'span[aria-label*="Get WhatsApp" i]',
+            'div[data-testid*="intro-banner"]',
+            'div[data-testid*="native-desktop-banner"]',
+            'div[data-testid*="desktop-app-banner"]',
+            'div[data-testid*="get-desktop-app"]'
         ];
         var els = document.querySelectorAll(selectors.join(','));
         for (var i = 0; i < els.length; i++) {
@@ -1184,6 +1192,243 @@ const BROWSER_INTEGRATION_SCRIPT: &str = r#"
             }
         }
     }, true);
+
+    // 7. Intercept downloads (blob:, data:, and anchor downloads)
+    var __appify_last_dl_url = '';
+    var __appify_last_dl_time = 0;
+    window.__appify_active_blobs = window.__appify_active_blobs || {};
+
+    function __appify_mime_to_ext(mime) {
+        if (!mime) return '';
+        mime = mime.toLowerCase();
+        if (mime.indexOf('image/jpeg') !== -1) return 'jpg';
+        if (mime.indexOf('image/png') !== -1) return 'png';
+        if (mime.indexOf('image/webp') !== -1) return 'webp';
+        if (mime.indexOf('image/gif') !== -1) return 'gif';
+        if (mime.indexOf('video/mp4') !== -1) return 'mp4';
+        if (mime.indexOf('video/webm') !== -1) return 'webm';
+        if (mime.indexOf('audio/ogg') !== -1 || mime.indexOf('audio/opus') !== -1) return 'ogg';
+        if (mime.indexOf('audio/mpeg') !== -1 || mime.indexOf('audio/mp3') !== -1) return 'mp3';
+        if (mime.indexOf('audio/mp4') !== -1 || mime.indexOf('audio/m4a') !== -1) return 'm4a';
+        if (mime.indexOf('audio/aac') !== -1) return 'aac';
+        if (mime.indexOf('application/pdf') !== -1) return 'pdf';
+        if (mime.indexOf('application/zip') !== -1) return 'zip';
+        if (mime.indexOf('text/plain') !== -1) return 'txt';
+        return '';
+    }
+
+    function __appify_handle_download_url(url, suggestedFilename) {
+        if (!url || typeof url !== 'string') return false;
+        var isBlob = url.startsWith('blob:');
+        var isData = url.startsWith('data:');
+        if (!isBlob && !isData) {
+            return false;
+        }
+
+        var now = Date.now();
+        if (url === __appify_last_dl_url && (now - __appify_last_dl_time) < 1000) {
+            return true;
+        }
+        __appify_last_dl_url = url;
+        __appify_last_dl_time = now;
+
+        var filename = suggestedFilename ? suggestedFilename.trim() : '';
+
+        fetch(url)
+            .then(function(res) {
+                var mime = res.headers.get('content-type') || '';
+                return res.blob().then(function(blob) {
+                    return { blob: blob, mime: mime || blob.type };
+                });
+            })
+            .then(function(res) {
+                var blob = res.blob;
+                var mime = res.mime || blob.type || '';
+                if (!filename || filename.indexOf('.') === -1) {
+                    var ext = __appify_mime_to_ext(mime) || 'bin';
+                    if (!filename) {
+                        filename = 'download.' + ext;
+                    } else if (filename.indexOf('.') === -1) {
+                        filename = filename + '.' + ext;
+                    }
+                }
+
+                var transferId = 'dl_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+                window.__appify_active_blobs[transferId] = {
+                    blob: blob,
+                    filename: filename,
+                    mime: mime
+                };
+
+                if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.appify) {
+                    window.webkit.messageHandlers.appify.postMessage(JSON.stringify({
+                        type: 'download_request',
+                        transferId: transferId,
+                        filename: filename,
+                        size: blob.size,
+                        mime: mime
+                    }));
+                }
+            })
+            .catch(function(err) {
+                console.error('[Appify] Failed to fetch blob for download:', err);
+            });
+
+        return true;
+    }
+
+    // Anchor prototype click hook
+    try {
+        var origAnchorClick = HTMLAnchorElement.prototype.click;
+        HTMLAnchorElement.prototype.click = function() {
+            var href = this.href || '';
+            var hasDownload = this.hasAttribute('download');
+            if (hasDownload || href.startsWith('blob:') || href.startsWith('data:')) {
+                var filename = this.getAttribute('download') || this.download || '';
+                if (__appify_handle_download_url(href, filename)) {
+                    return;
+                }
+            }
+            return origAnchorClick.apply(this, arguments);
+        };
+    } catch (e) {}
+
+    // Global capture-phase click hook for anchors
+    window.addEventListener('click', function(e) {
+        var el = e.target;
+        var anchor = el && el.closest ? el.closest('a') : null;
+        if (anchor) {
+            var href = anchor.href || '';
+            var hasDownload = anchor.hasAttribute('download');
+            if (hasDownload || href.startsWith('blob:') || href.startsWith('data:')) {
+                var filename = anchor.getAttribute('download') || anchor.download || '';
+                if (__appify_handle_download_url(href, filename)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                }
+            }
+        }
+    }, true);
+
+    // Window.open hook
+    try {
+        var origOpen = window.open;
+        window.open = function(url) {
+            if (typeof url === 'string' && (url.startsWith('blob:') || url.startsWith('data:'))) {
+                if (__appify_handle_download_url(url, '')) {
+                    return null;
+                }
+            }
+            return origOpen.apply(this, arguments);
+        };
+    } catch (e) {}
+
+    // Callback to begin chunk streaming once user confirms save location
+    window.__appify_download_start_transfer = function(transferId) {
+        var item = window.__appify_active_blobs && window.__appify_active_blobs[transferId];
+        if (!item) return;
+        var blob = item.blob;
+        var CHUNK_SIZE = 1024 * 1024; // 1 MB chunk
+        var totalSize = blob.size;
+        var totalChunks = Math.max(1, Math.ceil(totalSize / CHUNK_SIZE));
+        var currentChunk = 0;
+
+        function sendNext() {
+            if (currentChunk >= totalChunks) {
+                delete window.__appify_active_blobs[transferId];
+                return;
+            }
+            var start = currentChunk * CHUNK_SIZE;
+            var end = Math.min(start + CHUNK_SIZE, totalSize);
+            var slice = blob.slice(start, end);
+
+            var reader = new FileReader();
+            reader.onloadend = function() {
+                var dataUrl = reader.result;
+                var comma = dataUrl ? dataUrl.indexOf(',') : -1;
+                var base64 = comma !== -1 ? dataUrl.substring(comma + 1) : '';
+                var isLast = (currentChunk === totalChunks - 1);
+
+                if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.appify) {
+                    window.webkit.messageHandlers.appify.postMessage(JSON.stringify({
+                        type: 'download_chunk',
+                        transferId: transferId,
+                        chunkIndex: currentChunk,
+                        totalChunks: totalChunks,
+                        data: base64,
+                        isLast: isLast
+                    }));
+                }
+                currentChunk++;
+                if (!isLast) {
+                    setTimeout(sendNext, 5);
+                } else {
+                    delete window.__appify_active_blobs[transferId];
+                }
+            };
+            reader.readAsDataURL(slice);
+        }
+
+        sendNext();
+    };
+
+    // Callback to cancel download if user aborted save dialog
+    window.__appify_download_cancel = function(transferId) {
+        if (window.__appify_active_blobs && window.__appify_active_blobs[transferId]) {
+            delete window.__appify_active_blobs[transferId];
+        }
+    };
+
+    // 8. Fix WebKit SVG calc() attribute parsing bug (e.g. calc(50% - 0px), calc(100% - 0px))
+    try {
+        var origSetAttribute = Element.prototype.setAttribute;
+        var origSetAttributeNS = Element.prototype.setAttributeNS;
+
+        function sanitizeSvgLength(val) {
+            if (typeof val === 'string' && val.indexOf('calc(') !== -1) {
+                var cleaned = val.replace(/calc\(\s*([\d.]+%?)\s*[+-]\s*0(?:px|%|\w+)?\s*\)/gi, '$1');
+                if (cleaned.indexOf('calc(') !== -1) {
+                    var m = cleaned.match(/calc\(\s*([\d.]+%?)/i);
+                    if (m && m[1]) return m[1];
+                }
+                return cleaned;
+            }
+            return val;
+        }
+
+        Element.prototype.setAttribute = function(name, val) {
+            if (this.namespaceURI === 'http://www.w3.org/2000/svg' || (this.tagName && (this.tagName.toLowerCase() === 'circle' || this.tagName.toLowerCase() === 'rect'))) {
+                if (name === 'r' || name === 'width' || name === 'height' || name === 'x' || name === 'y' || name === 'cx' || name === 'cy') {
+                    val = sanitizeSvgLength(val);
+                }
+            }
+            try {
+                return origSetAttribute.call(this, name, val);
+            } catch (err) {
+                if (typeof val === 'string' && val.indexOf('calc(') !== -1) {
+                    return origSetAttribute.call(this, name, val.replace(/calc\([^)]+\)/gi, '50%'));
+                }
+                throw err;
+            }
+        };
+
+        Element.prototype.setAttributeNS = function(ns, name, val) {
+            if (this.namespaceURI === 'http://www.w3.org/2000/svg' || (this.tagName && (this.tagName.toLowerCase() === 'circle' || this.tagName.toLowerCase() === 'rect'))) {
+                if (name === 'r' || name === 'width' || name === 'height' || name === 'x' || name === 'y' || name === 'cx' || name === 'cy') {
+                    val = sanitizeSvgLength(val);
+                }
+            }
+            try {
+                return origSetAttributeNS.call(this, ns, name, val);
+            } catch (err) {
+                if (typeof val === 'string' && val.indexOf('calc(') !== -1) {
+                    return origSetAttributeNS.call(this, ns, name, val.replace(/calc\([^)]+\)/gi, '50%'));
+                }
+                throw err;
+            }
+        };
+    } catch (e) {}
 })();
 "#;
 
@@ -1438,6 +1683,66 @@ fn get_clipboard_image_png() -> Option<Vec<u8>> {
 fn get_clipboard_image_png() -> Option<Vec<u8>> {
     None
 }
+
+struct ActiveBlobDownload {
+    destination: PathBuf,
+    file: Option<fs::File>,
+    received_bytes: usize,
+    total_bytes: usize,
+}
+
+#[cfg(target_os = "linux")]
+fn prompt_save_file_picker(
+    parent: Option<&gtk::Window>,
+    default_filename: &str,
+) -> Option<PathBuf> {
+    use gtk::prelude::*;
+    if !gtk::is_initialized() && gtk::init().is_err() {
+        return None;
+    }
+    let raw_name = Path::new(default_filename)
+        .file_name()
+        .and_then(|f| f.to_str())
+        .unwrap_or("download");
+    let clean_filename = if raw_name.trim().is_empty() {
+        "download"
+    } else {
+        raw_name.trim()
+    };
+
+    let chooser = gtk::FileChooserNative::new(
+        Some("Save File"),
+        parent,
+        gtk::FileChooserAction::Save,
+        Some("_Save"),
+        Some("_Cancel"),
+    );
+    chooser.set_do_overwrite_confirmation(true);
+    chooser.set_current_name(clean_filename);
+    if let Some(dl_dir) = dirs::download_dir() {
+        let _ = chooser.set_current_folder(&dl_dir);
+    }
+    let res = chooser.run();
+    if res == gtk::ResponseType::Accept {
+        chooser.filename()
+    } else {
+        None
+    }
+}
+
+#[cfg(not(target_os = "linux"))]
+fn prompt_save_file_picker(
+    _parent: Option<&()>,
+    default_filename: &str,
+) -> Option<PathBuf> {
+    let dl_dir = dirs::download_dir().unwrap_or_else(|| {
+        dirs::home_dir()
+            .map(|h| h.join("Downloads"))
+            .unwrap_or_else(|| PathBuf::from("."))
+    });
+    Some(dl_dir.join(default_filename))
+}
+
 
 fn fetch_icon(url_str: &str, icon_path: &Path) {
     let agent = ureq::AgentBuilder::new()
@@ -1935,12 +2240,30 @@ fn execute_run(meta: AppMetadata) {
                                 })
                                 .unwrap_or_else(|| "download".to_string());
 
-                            let download_dir = dirs::download_dir().unwrap_or_else(|| {
-                                dirs::home_dir()
-                                    .map(|h| h.join("Downloads"))
-                                    .unwrap_or_else(|| PathBuf::from("."))
-                            });
-                            *destination = download_dir.join(filename);
+                            #[cfg(target_os = "linux")]
+                            {
+                                if let Some(chosen_path) = prompt_save_file_picker(None, &filename) {
+                                    *destination = chosen_path;
+                                    true
+                                } else {
+                                    false
+                                }
+                            }
+                            #[cfg(not(target_os = "linux"))]
+                            {
+                                let download_dir = dirs::download_dir().unwrap_or_else(|| {
+                                    dirs::home_dir()
+                                        .map(|h| h.join("Downloads"))
+                                        .unwrap_or_else(|| PathBuf::from("."))
+                                });
+                                *destination = download_dir.join(filename);
+                                true
+                            }
+                        }
+                        tauri::webview::DownloadEvent::Finished { success, path, .. } => {
+                            if success {
+                                println!("[Appify] HTTP download finished: {:?}", path);
+                            }
                             true
                         }
                         _ => true,
@@ -1986,6 +2309,8 @@ fn execute_run(meta: AppMetadata) {
                     let devtools_toggle_instant = std::sync::Arc::new(std::sync::Mutex::new(std::time::Instant::now() - std::time::Duration::from_secs(10)));
                     let last_toggle_msg = devtools_toggle_instant.clone();
                     let last_toggle_key = devtools_toggle_instant.clone();
+                    let active_blob_downloads: std::sync::Arc<std::sync::Mutex<std::collections::HashMap<String, ActiveBlobDownload>>> =
+                        std::sync::Arc::new(std::sync::Mutex::new(std::collections::HashMap::new()));
 
                     // Register custom CSS and script message handler
                     if let Some(ucm) = wv.user_content_manager() {
@@ -2001,6 +2326,8 @@ fn execute_run(meta: AppMetadata) {
                         }
                         let _ = ucm.register_script_message_handler("appify");
                         let w_for_msg = w_for_webview.clone();
+                        let active_dls = active_blob_downloads.clone();
+                        let wv_for_msg = wv.clone();
                         ucm.connect_script_message_received(Some("appify"), move |_ucm, js_res| {
                             if let Some(val) = js_res.js_value() {
                                 let msg = val.to_str();
@@ -2023,7 +2350,80 @@ fn execute_run(meta: AppMetadata) {
                                             let _ = w_for_msg.eval(&js);
                                         }
                                     }
-                                    _ => {}
+                                    _ => {
+                                        if msg.starts_with('{') {
+                                            if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(&msg) {
+                                                let msg_type = parsed.get("type").and_then(|v| v.as_str()).unwrap_or("");
+                                                match msg_type {
+                                                    "download_request" => {
+                                                        let transfer_id = parsed.get("transferId").and_then(|v| v.as_str()).unwrap_or("").to_string();
+                                                        let filename = parsed.get("filename").and_then(|v| v.as_str()).unwrap_or("download").to_string();
+                                                        let total_size = parsed.get("size").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
+
+                                                        let parent_win = wv_for_msg.toplevel().and_then(|w| w.downcast::<gtk::Window>().ok());
+                                                        if let Some(dest_path) = prompt_save_file_picker(parent_win.as_ref(), &filename) {
+                                                            if let Some(parent_dir) = dest_path.parent() {
+                                                                let _ = fs::create_dir_all(parent_dir);
+                                                            }
+                                                            match fs::File::create(&dest_path) {
+                                                                Ok(file) => {
+                                                                    let mut map = active_dls.lock().unwrap();
+                                                                    map.insert(transfer_id.clone(), ActiveBlobDownload {
+                                                                        destination: dest_path,
+                                                                        file: Some(file),
+                                                                        received_bytes: 0,
+                                                                        total_bytes: total_size,
+                                                                    });
+                                                                    let js = format!("window.__appify_download_start_transfer('{}');", transfer_id);
+                                                                    let _ = w_for_msg.eval(&js);
+                                                                }
+                                                                Err(e) => {
+                                                                    eprintln!("[Appify] Failed to create download target: {}", e);
+                                                                    let js = format!("window.__appify_download_cancel('{}');", transfer_id);
+                                                                    let _ = w_for_msg.eval(&js);
+                                                                }
+                                                            }
+                                                        } else {
+                                                            let js = format!("window.__appify_download_cancel('{}');", transfer_id);
+                                                            let _ = w_for_msg.eval(&js);
+                                                        }
+                                                    }
+                                                    "download_chunk" => {
+                                                        let transfer_id = parsed.get("transferId").and_then(|v| v.as_str()).unwrap_or("");
+                                                        let data_b64 = parsed.get("data").and_then(|v| v.as_str()).unwrap_or("");
+                                                        let is_last = parsed.get("isLast").and_then(|v| v.as_bool()).unwrap_or(false);
+
+                                                        if let Ok(bytes) = base64::Engine::decode(&base64::engine::general_purpose::STANDARD, data_b64) {
+                                                            let mut map = active_dls.lock().unwrap();
+                                                            if let Some(item) = map.get_mut(transfer_id) {
+                                                                if let Some(file) = item.file.as_mut() {
+                                                                    let _ = file.write_all(&bytes);
+                                                                    item.received_bytes += bytes.len();
+                                                                    if is_last {
+                                                                        let _ = file.flush();
+                                                                        let dest = item.destination.clone();
+                                                                        map.remove(transfer_id);
+                                                                        println!("[Appify] File downloaded: {}", dest.display());
+                                                                        let _ = w_for_msg.request_user_attention(Some(tauri::UserAttentionType::Informational));
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    "download_cancel" => {
+                                                        let transfer_id = parsed.get("transferId").and_then(|v| v.as_str()).unwrap_or("");
+                                                        let mut map = active_dls.lock().unwrap();
+                                                        if let Some(item) = map.remove(transfer_id) {
+                                                            if item.destination.exists() && item.received_bytes < item.total_bytes {
+                                                                let _ = fs::remove_file(&item.destination);
+                                                            }
+                                                        }
+                                                    }
+                                                    _ => {}
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         });
@@ -2714,11 +3114,16 @@ fn get_builtin_extensions() -> ExtensionRegistry {
 (function() {
     function cleanWhatsAppDownloadPromos() {
         var selectors = [
-            'a[href*="download"]',
+            'a[href*="whatsapp.com/download"]',
+            'a[href*="microsoft.com/store"][href*="whatsapp"]',
             'button[aria-label*="Get WhatsApp" i]',
             'button[aria-label*="Get the app" i]',
             'div[aria-label*="Get WhatsApp" i]',
-            'span[aria-label*="Get WhatsApp" i]'
+            'span[aria-label*="Get WhatsApp" i]',
+            'div[data-testid*="intro-banner"]',
+            'div[data-testid*="native-desktop-banner"]',
+            'div[data-testid*="desktop-app-banner"]',
+            'div[data-testid*="get-desktop-app"]'
         ];
         var els = document.querySelectorAll(selectors.join(','));
         for (var i = 0; i < els.length; i++) {
@@ -2817,15 +3222,18 @@ fn get_builtin_extensions() -> ExtensionRegistry {
                 description: "Hides 'Get WhatsApp for Mac / Windows' promos and download banners via CSS".to_string(),
                 category: "theme".to_string(),
                 content: r#"
-/* Hide 'Get WhatsApp for Mac / Windows' buttons, banners, and download prompts */
-a[href*="/download"],
+/* Hide 'Get WhatsApp for Mac / Windows' desktop app promo banners */
 a[href*="whatsapp.com/download"],
+a[href*="microsoft.com/store"][href*="whatsapp"],
 button[aria-label*="Get WhatsApp" i],
 button[aria-label*="Get the app" i],
 button[title*="Get WhatsApp" i],
 div[aria-label*="Get WhatsApp" i],
 span[aria-label*="Get WhatsApp" i],
-[data-testid*="download" i] {
+div[data-testid*="intro-banner"],
+div[data-testid*="native-desktop-banner"],
+div[data-testid*="desktop-app-banner"],
+div[data-testid*="get-desktop-app"] {
     display: none !important;
 }
 "#.trim().to_string(),
@@ -5054,6 +5462,38 @@ mod tests {
         assert!(BROWSER_INTEGRATION_SCRIPT.contains("toggle_devtools"));
         assert!(BROWSER_INTEGRATION_SCRIPT.contains("check_clipboard_paste"));
         assert!(BROWSER_INTEGRATION_SCRIPT.contains("F12"));
+        assert!(BROWSER_INTEGRATION_SCRIPT.contains("__appify_handle_download_url"));
+        assert!(BROWSER_INTEGRATION_SCRIPT.contains("download_request"));
+        assert!(BROWSER_INTEGRATION_SCRIPT.contains("download_chunk"));
+        assert!(BROWSER_INTEGRATION_SCRIPT.contains("__appify_download_start_transfer"));
+        assert!(BROWSER_INTEGRATION_SCRIPT.contains("__appify_download_cancel"));
+    }
+
+    #[test]
+    fn test_whatsapp_promo_cleaner_does_not_hide_media_downloads() {
+        let presets = get_curated_presets();
+        let wa = presets.iter().find(|p| p.id == "whatsapp").expect("WhatsApp preset must exist");
+        let css = wa.default_inject_css.as_deref().unwrap_or("");
+        let js = wa.default_inject_js.as_deref().unwrap_or("");
+
+        // Crucial: Must NOT contain blanket download selectors that hide chat/media download buttons
+        assert!(!css.contains("[data-testid*=\"download\""), "CSS should not hide media download buttons");
+        assert!(!css.contains("a[href*=\"/download\"]"), "CSS should not blanket hide /download links");
+        assert!(!js.contains("'a[href*=\"download\"]'"), "JS should not blanket hide download anchors");
+
+        // Must still hide desktop app promo banners
+        assert!(css.contains("whatsapp.com/download"));
+        assert!(css.contains("data-testid*=\"intro-banner\""));
+        assert!(js.contains("cleanWhatsAppDownloadPromos"));
+
+        // Verify builtin extensions as well
+        let builtins = get_builtin_extensions();
+        let plugin = builtins.plugins.iter().find(|p| p.id == "builtin-wa-promo-cleaner").expect("wa cleaner plugin exists");
+        assert!(!plugin.content.contains("'a[href*=\"download\"]'"));
+
+        let theme = builtins.themes.iter().find(|t| t.id == "builtin-wa-promo-css").expect("wa cleaner css exists");
+        assert!(!theme.content.contains("[data-testid*=\"download\""));
+        assert!(!theme.content.contains("a[href*=\"/download\"]"));
     }
 
     #[test]
