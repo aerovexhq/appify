@@ -12,7 +12,7 @@
       "description": "Expands GitHub diffs, pull request code viewers, and table containers across the full screen width.",
       "category": "plugin",
       "author": "Aerovex",
-      "author_url": "https://github.com/aerovexsim",
+      "author_url": "https://github.com/aerovexhq",
       "version": "1.0.0",
       "target_domains": [
         "github.com"
@@ -38,7 +38,7 @@
       "description": "Applies an arctic, north-bluish palette with smooth contrast and clean cool-gray accents.",
       "category": "theme",
       "author": "Aerovex",
-      "author_url": "https://github.com/aerovexsim",
+      "author_url": "https://github.com/aerovexhq",
       "version": "1.0.0",
       "target_domains": [
         "*"
@@ -65,7 +65,7 @@
       "description": "Transforms dark-gray web app backgrounds into pure #000000 black to maximize contrast and battery life on OLED screens.",
       "category": "theme",
       "author": "Aerovex",
-      "author_url": "https://github.com/aerovexsim",
+      "author_url": "https://github.com/aerovexhq",
       "version": "1.0.0",
       "target_domains": [
         "*"
@@ -92,7 +92,7 @@
       "description": "Optimizes playback performance by dampening high-GPU cinematic ambient glows and improving video framing.",
       "category": "plugin",
       "author": "Aerovex",
-      "author_url": "https://github.com/aerovexsim",
+      "author_url": "https://github.com/aerovexhq",
       "version": "1.0.0",
       "target_domains": [
         "youtube.com",

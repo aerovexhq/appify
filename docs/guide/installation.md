@@ -6,12 +6,12 @@ Appify supports multiple installation formats across Linux distributions.
 
 Run the automated installer script:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/aerovexsim/appify/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/aerovexhq/appify/main/install.sh | bash
 ```
 
 ## Debian / Ubuntu (.deb)
 
-Download the `.deb` package from the [Releases](https://github.com/aerovexsim/appify/releases) page:
+Download the `.deb` package from the [Releases](https://github.com/aerovexhq/appify/releases) page:
 ```bash
 sudo dpkg -i appify_*_amd64.deb
 sudo apt-get install -f
@@ -35,7 +35,7 @@ sudo apt install -y build-essential curl libgtk-3-dev libwebkit2gtk-4.1-dev liba
 
 Build and install:
 ```bash
-git clone https://github.com/aerovexsim/appify.git
+git clone https://github.com/aerovexhq/appify.git
 cd appify
 cargo build --release
 install -m 755 target/release/appify ~/.local/bin/appify

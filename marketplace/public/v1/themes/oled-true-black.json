@@ -4,7 +4,7 @@
   "description": "Transforms dark-gray web app backgrounds into pure #000000 black to maximize contrast and battery life on OLED screens.",
   "category": "theme",
   "author": "Aerovex",
-  "author_url": "https://github.com/aerovexsim",
+  "author_url": "https://github.com/aerovexhq",
   "version": "1.0.0",
   "target_domains": [
     "*"

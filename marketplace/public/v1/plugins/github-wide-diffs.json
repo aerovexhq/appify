@@ -4,7 +4,7 @@
   "description": "Expands GitHub diffs, pull request code viewers, and table containers across the full screen width.",
   "category": "plugin",
   "author": "Aerovex",
-  "author_url": "https://github.com/aerovexsim",
+  "author_url": "https://github.com/aerovexhq",
   "version": "1.0.0",
   "target_domains": [
     "github.com"

@@ -4,7 +4,7 @@
   "description": "Optimizes playback performance by dampening high-GPU cinematic ambient glows and improving video framing.",
   "category": "plugin",
   "author": "Aerovex",
-  "author_url": "https://github.com/aerovexsim",
+  "author_url": "https://github.com/aerovexhq",
   "version": "1.0.0",
   "target_domains": ["youtube.com", "music.youtube.com"],
   "tags": ["youtube", "video", "performance", "media"]
