@@ -30,9 +30,9 @@ appify marketplace install oled-true-black
 
 ## Contributing an Extension
 
-We accept community contributions via **GitHub Issues** on [aerovexsim/appify](https://github.com/aerovexsim/appify):
+We accept community contributions via **GitHub Issues** on [aerovexhq/appify](https://github.com/aerovexhq/appify):
 
-1. Go to [New Issue](https://github.com/aerovexsim/appify/issues/new/choose).
+1. Go to [New Issue](https://github.com/aerovexhq/appify/issues/new/choose).
 2. Choose either **Plugin Submission** or **Theme Submission**.
 3. Fill in the name, description, author handle, target domain, and paste your JavaScript or CSS code.
 4. Once reviewed, the extension is tested and deployed directly to `cdn.appify.aerovex.net`!

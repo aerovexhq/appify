@@ -16,7 +16,7 @@ export default defineConfig({
       { text: 'Extensions', link: '/guide/extensions' },
       { text: 'Marketplace', link: '/guide/marketplace' },
       { text: 'CLI Reference', link: '/guide/cli' },
-      { text: 'GitHub', link: 'https://github.com/aerovexsim/appify' }
+      { text: 'GitHub', link: 'https://github.com/aerovexhq/appify' }
     ],
     sidebar: [
       {
@@ -42,7 +42,7 @@ export default defineConfig({
       }
     ],
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/aerovexsim/appify' }
+      { icon: 'github', link: 'https://github.com/aerovexhq/appify' }
     ],
     footer: {
       message: 'Released under the MIT License.',

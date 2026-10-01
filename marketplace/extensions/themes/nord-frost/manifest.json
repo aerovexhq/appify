@@ -4,7 +4,7 @@
   "description": "Applies an arctic, north-bluish palette with smooth contrast and clean cool-gray accents.",
   "category": "theme",
   "author": "Aerovex",
-  "author_url": "https://github.com/aerovexsim",
+  "author_url": "https://github.com/aerovexhq",
   "version": "1.0.0",
   "target_domains": ["*"],
   "tags": ["nord", "frost", "palette", "aesthetic", "universal"]

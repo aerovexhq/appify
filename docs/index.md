@@ -17,7 +17,7 @@ hero:
       link: /guide/marketplace
     - theme: alt
       text: GitHub
-      link: https://github.com/aerovexsim/appify
+      link: https://github.com/aerovexhq/appify
 
 features:
   - icon: ⚡
