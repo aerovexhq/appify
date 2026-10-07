@@ -1,8 +1,9 @@
 name: Release
 
-# Only runs when you push a tag like v0.1.0 — never on regular commits.
 on:
   push:
+    branches:
+      - main
     tags:
       - "[0-9]+.[0-9]+.[0-9]+*"
       - "v*"
@@ -29,6 +30,20 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Determine Release Mode
+        id: rel
+        shell: bash
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "tag=rolling" >> $GITHUB_OUTPUT
+            echo "name=Appify Continuous Development Build (0.2.0-dev)" >> $GITHUB_OUTPUT
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            echo "name=Appify ${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            echo "prerelease=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -60,10 +75,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: "Appify ${{ github.ref_name }}"
+          tagName: ${{ steps.rel.outputs.tag }}
+          releaseName: ${{ steps.rel.outputs.name }}
           releaseDraft: false
-          prerelease: false
+          prerelease: ${{ steps.rel.outputs.prerelease == 'true' }}
           includeUpdaterJson: false  # no updater configured in tauri.conf.json, so don't expect .sig files
           uploadPlainBinary: true
           args: ${{ matrix.args }}
