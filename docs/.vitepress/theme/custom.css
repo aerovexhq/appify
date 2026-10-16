@@ -1,0 +1,193 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Brand - Linear lavender */
+  --vp-c-brand-1: #5e6ad2;
+  --vp-c-brand-2: #6e7ae2;
+  --vp-c-brand-3: #4f5bc4;
+  --vp-c-brand-soft: rgba(94, 106, 210, 0.16);
+
+  /* Engine Highlight - Desktop Systems */
+  --aerovex-engine-accent: #38bdf8;
+  --aerovex-engine-soft: rgba(56, 189, 248, 0.15);
+
+  /* Typography */
+  --vp-font-family-base: 'Inter Display', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --vp-font-family-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Canvas & Surfaces */
+  --vp-c-bg: #08090a;
+  --vp-c-bg-alt: #0f1012;
+  --vp-c-bg-elv: #15171a;
+  --vp-c-bg-soft: #0f1012;
+
+  /* Hairline Borders & Dividers */
+  --vp-c-border: rgba(255, 255, 255, 0.08);
+  --vp-c-divider: rgba(255, 255, 255, 0.08);
+  --vp-c-gutter: rgba(255, 255, 255, 0.08);
+
+  /* Text Hierarchy */
+  --vp-c-text-1: #f3f4f6;
+  --vp-c-text-2: #9ca3af;
+  --vp-c-text-3: #6b7280;
+
+  /* Code Blocks */
+  --vp-code-bg: #0f1012;
+  --vp-code-block-bg: #0f1012;
+  --vp-code-inline-bg: rgba(255, 255, 255, 0.05);
+
+  /* Layout Chrome */
+  --vp-nav-bg-color: rgba(8, 9, 10, 0.85);
+  --vp-nav-screen-bg-color: #08090a;
+  --vp-sidebar-bg-color: #08090a;
+}
+
+.dark {
+  --vp-c-bg: #08090a;
+  --vp-c-bg-alt: #0f1012;
+  --vp-c-bg-elv: #15171a;
+  --vp-c-bg-soft: #0f1012;
+
+  --vp-c-border: rgba(255, 255, 255, 0.08);
+  --vp-c-divider: rgba(255, 255, 255, 0.08);
+  --vp-c-gutter: rgba(255, 255, 255, 0.08);
+
+  --vp-c-text-1: #f3f4f6;
+  --vp-c-text-2: #9ca3af;
+  --vp-c-text-3: #6b7280;
+
+  --vp-code-bg: #0f1012;
+  --vp-code-block-bg: #0f1012;
+  --vp-code-inline-bg: rgba(255, 255, 255, 0.05);
+
+  --vp-nav-bg-color: rgba(8, 9, 10, 0.85);
+  --vp-nav-screen-bg-color: #08090a;
+  --vp-sidebar-bg-color: #08090a;
+}
+
+/* Headings with tight -0.035em tracking */
+h1, h2, h3, h4, h5, h6,
+.VPHero .name,
+.VPHero .tagline,
+.VPNavBarTitle,
+.vp-doc h1,
+.vp-doc h2,
+.vp-doc h3,
+.vp-doc h4 {
+  letter-spacing: -0.035em !important;
+}
+
+/* Global scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(94, 106, 210, 0.6);
+}
+
+/* Hero Title with Lavender-to-Physics Accent Gradient */
+.VPHero .name {
+  background: linear-gradient(135deg, #ffffff 30%, #5e6ad2 70%, #38bdf8 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.VPHero .tagline {
+  color: #9ca3af !important;
+}
+
+/* Feature cards */
+.VPFeature {
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background-color: #0f1012 !important;
+  border-radius: 12px !important;
+  transition: border-color 0.25s ease, background-color 0.25s ease !important;
+}
+
+.VPFeature:hover {
+  border-color: rgba(94, 106, 210, 0.5) !important;
+  background-color: #15171a !important;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 8px 14px;
+}
+
+th {
+  background-color: #0f1012 !important;
+  font-weight: 600;
+}
+
+/* Landing Page Full-Bleed Overrides */
+.landing-page .VPContent {
+  padding: 0 !important;
+  max-width: 100% !important;
+}
+
+.landing-page .VPDoc {
+  padding: 0 !important;
+}
+
+.landing-page .VPDoc:not(.has-sidebar) .content-container {
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+
+.landing-page .VPNav {
+  display: none !important;
+}
+
+.landing-page .VPFooter {
+  display: none !important;
+}
+
+/* Vexel-Grade Sidebar & Docs Craft */
+.VPSidebarItem.is-active > .item > .link {
+  color: #ffffff !important;
+  background: rgba(94, 106, 210, 0.12) !important;
+  border-left: 2px solid #5e6ad2 !important;
+  border-radius: 4px;
+  box-shadow: 0 0 15px rgba(94, 106, 210, 0.18);
+}
+
+.vp-doc code {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.88em !important;
+}
+
+.vp-doc pre {
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 8px !important;
+  background-color: #08090a !important;
+}
+
+.custom-block.tip, .custom-block.info, .custom-block.warning, .custom-block.danger {
+  border-left-width: 3px !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
