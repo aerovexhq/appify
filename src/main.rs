@@ -2158,6 +2158,9 @@ fn execute_run(meta: AppMetadata) {
             let initial_height = meta.height.unwrap_or(800.0);
             let start_visible = !meta.start_hidden;
 
+            let min_w = if meta.width.is_some() { initial_width.min(320.0) } else { 800.0 };
+            let min_h = if meta.height.is_some() { initial_height.min(480.0) } else { 600.0 };
+
             let mut builder = tauri::WebviewWindowBuilder::new(
                 app,
                 "main",
@@ -2165,7 +2168,7 @@ fn execute_run(meta: AppMetadata) {
             )
                 .title(&win_title)
                 .inner_size(initial_width, initial_height)
-                .min_inner_size(800.0, 600.0)
+                .min_inner_size(min_w, min_h)
                 .center()
                 .visible(start_visible)
                 .maximized(meta.maximize)
