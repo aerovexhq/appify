@@ -1,0 +1,230 @@
+[
+  {
+    "tag_name": "0.2.0",
+    "name": "Appify 0.2.0",
+    "published_at": "2026-10-07T13:37:39Z",
+    "html_url": "https://github.com/aerovexhq/appify/releases/tag/0.2.0",
+    "body": "# Appify 0.2.0\n\nEnterprise web-to-native desktop application bundler and cross-platform desktop packager powered by Tauri 2.0.\n\n### Highlights\n- Instant web application wrapping with high-performance native webview execution\n- Cross-platform packaging support for Linux (.deb, AppImage), macOS (.dmg, app bundles), and Windows (.msi, .exe)\n- Hardware acceleration and native OS window chrome integrations\n- Minimal binary overhead and zero runtime background bloat\n",
+    "prerelease": false,
+    "assets": [
+      {
+        "name": "appify-0.2.0-1.x86_64.rpm",
+        "size": 7370544,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/0.2.0/appify-0.2.0-1.x86_64.rpm",
+        "updated_at": "2026-10-09T17:39:24Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_0.2.0_aarch64.dmg",
+        "size": 6173493,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/0.2.0/appify_0.2.0_aarch64.dmg",
+        "updated_at": "2026-10-09T17:38:29Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_0.2.0_amd64.AppImage",
+        "size": 85785080,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/0.2.0/appify_0.2.0_amd64.AppImage",
+        "updated_at": "2026-10-09T17:39:29Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_0.2.0_amd64.deb",
+        "size": 7367674,
+        "download_count": 1,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/0.2.0/appify_0.2.0_amd64.deb",
+        "updated_at": "2026-10-09T17:39:23Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_0.2.0_x64-setup.exe",
+        "size": 4311201,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/0.2.0/appify_0.2.0_x64-setup.exe",
+        "updated_at": "2026-10-09T17:39:10Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_0.2.0_x64.dmg",
+        "size": 6322798,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/0.2.0/appify_0.2.0_x64.dmg",
+        "updated_at": "2026-10-09T17:40:57Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_0.2.0_x64_en-US.msi",
+        "size": 5865472,
+        "download_count": 1,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/0.2.0/appify_0.2.0_x64_en-US.msi",
+        "updated_at": "2026-10-09T17:39:09Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_aarch64.app.tar.gz",
+        "size": 5900029,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/0.2.0/appify_aarch64.app.tar.gz",
+        "updated_at": "2026-10-09T17:38:30Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_darwin_aarch64",
+        "size": 16248992,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/0.2.0/appify_darwin_aarch64",
+        "updated_at": "2026-10-09T17:38:32Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_darwin_x64",
+        "size": 16920176,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/0.2.0/appify_darwin_x64",
+        "updated_at": "2026-10-09T17:41:01Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_linux_x64",
+        "size": 22532232,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/0.2.0/appify_linux_x64",
+        "updated_at": "2026-10-09T17:39:31Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_windows_x64.exe",
+        "size": 16018432,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/0.2.0/appify_windows_x64.exe",
+        "updated_at": "2026-10-09T17:39:12Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_x64.app.tar.gz",
+        "size": 6053640,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/0.2.0/appify_x64.app.tar.gz",
+        "updated_at": "2026-10-09T17:40:59Z",
+        "content_type": "application/zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "rolling",
+    "name": "Appify Continuous Development Build (0.2.0-dev)",
+    "published_at": "2026-10-07T13:37:30Z",
+    "html_url": "https://github.com/aerovexhq/appify/releases/tag/rolling",
+    "body": "Automated continuous development release tracking the latest commit on main.",
+    "prerelease": true,
+    "assets": [
+      {
+        "name": "appify-0.2.0-1.x86_64.rpm",
+        "size": 5159315,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/rolling/appify-0.2.0-1.x86_64.rpm",
+        "updated_at": "2026-10-09T17:39:33Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_0.2.0_aarch64.dmg",
+        "size": 4578130,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/rolling/appify_0.2.0_aarch64.dmg",
+        "updated_at": "2026-10-09T17:38:19Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_0.2.0_amd64.AppImage",
+        "size": 83900920,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/rolling/appify_0.2.0_amd64.AppImage",
+        "updated_at": "2026-10-09T17:39:37Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_0.2.0_amd64.deb",
+        "size": 5156336,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/rolling/appify_0.2.0_amd64.deb",
+        "updated_at": "2026-10-09T17:39:31Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_0.2.0_x64-setup.exe",
+        "size": 3462516,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/rolling/appify_0.2.0_x64-setup.exe",
+        "updated_at": "2026-10-09T17:40:09Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_0.2.0_x64.dmg",
+        "size": 4857033,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/rolling/appify_0.2.0_x64.dmg",
+        "updated_at": "2026-10-09T17:39:41Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_0.2.0_x64_en-US.msi",
+        "size": 4497408,
+        "download_count": 1,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/rolling/appify_0.2.0_x64_en-US.msi",
+        "updated_at": "2026-10-09T17:40:08Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_aarch64.app.tar.gz",
+        "size": 4297110,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/rolling/appify_aarch64.app.tar.gz",
+        "updated_at": "2026-10-09T17:38:20Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_darwin_aarch64",
+        "size": 8337168,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/rolling/appify_darwin_aarch64",
+        "updated_at": "2026-10-09T17:38:22Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_darwin_x64",
+        "size": 9382624,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/rolling/appify_darwin_x64",
+        "updated_at": "2026-10-09T17:39:45Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_linux_x64",
+        "size": 11695504,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/rolling/appify_linux_x64",
+        "updated_at": "2026-10-09T17:39:39Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_windows_x64.exe",
+        "size": 9156096,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/rolling/appify_windows_x64.exe",
+        "updated_at": "2026-10-09T17:40:10Z",
+        "content_type": "application/zip"
+      },
+      {
+        "name": "appify_x64.app.tar.gz",
+        "size": 4581822,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/aerovexhq/appify/releases/download/rolling/appify_x64.app.tar.gz",
+        "updated_at": "2026-10-09T17:39:43Z",
+        "content_type": "application/zip"
+      }
+    ]
+  }
+]

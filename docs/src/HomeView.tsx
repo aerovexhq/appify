@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { 
-  BookOpen, Layers, Cpu
+  BookOpen, Layers, Cpu, Download
 } from 'lucide-react';
 import { APPIFY_SUBSYSTEMS, Subsystem } from './data/subsystems';
 import { SubsystemCard } from './components/SubsystemCard';
 import { ArchitectureModal } from './components/ArchitectureModal';
 import { BenchmarkMatrix } from './components/BenchmarkMatrix';
+import { DownloadSection } from './components/DownloadSection';
 
 interface HomeViewProps {
   onNavigate: (tab: 'home' | 'docs', hashTarget?: string) => void;
@@ -61,21 +62,29 @@ export default function HomeView({ onNavigate }: HomeViewProps) {
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3.5 mb-14">
+            <a
+              href="#downloads"
+              className="px-6 py-3.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-sm shadow-xl shadow-purple-600/20 flex items-center gap-2.5 transition"
+            >
+              <Download className="w-4 h-4" />
+              <span>Download Latest</span>
+            </a>
+
             <button
               type="button"
               onClick={() => onNavigate('docs', '#docs/why_appify')}
-              className="px-6 py-3.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-sm shadow-xl shadow-purple-600/20 flex items-center gap-2.5 transition"
+              className="px-6 py-3.5 rounded-xl bg-[#15171a] hover:bg-[#1c1e22] text-white font-semibold text-sm border border-white/[0.08] hover:border-white/[0.16] shadow-xl shadow-black/40 flex items-center gap-2.5 transition"
             >
-              <BookOpen className="w-4 h-4" />
+              <BookOpen className="w-4 h-4 text-purple-400" />
               <span>Explore Documentation</span>
             </button>
 
             <a
               href="#subsystems"
-              className="px-6 py-3.5 rounded-xl bg-[#15171a] hover:bg-[#1c1e22] text-white font-semibold text-sm border border-white/[0.08] hover:border-white/[0.16] shadow-xl shadow-black/40 flex items-center gap-2.5 transition"
+              className="px-6 py-3.5 rounded-xl bg-[#15171a] hover:bg-[#1c1e22] text-slate-300 hover:text-white font-semibold text-sm border border-white/[0.08] hover:border-white/[0.16] shadow-xl shadow-black/40 flex items-center gap-2.5 transition"
             >
-              <Layers className="w-4 h-4 text-purple-400" />
-              <span>Inspect Subsystems</span>
+              <Layers className="w-4 h-4 text-slate-400" />
+              <span>Subsystems</span>
             </a>
           </div>
 
@@ -141,6 +150,9 @@ export default function HomeView({ onNavigate }: HomeViewProps) {
           ))}
         </div>
       </section>
+
+      {/* Download Section */}
+      <DownloadSection />
 
       {/* Benchmark Matrix */}
       <BenchmarkMatrix />

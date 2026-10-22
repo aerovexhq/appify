@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/fetch-releases.js",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "docs:dev": "vite",
