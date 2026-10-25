@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background Gradient (Kortex Dark Canvas) -->
+    <linearGradient id="canvasGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#222220" />
+      <stop offset="100%" stop-color="#181817" />
+    </linearGradient>
+
+    <!-- Kortex Signature Terracotta / Coral Gradient -->
+    <linearGradient id="coralGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e58364" />
+      <stop offset="100%" stop-color="#c15f3c" />
+    </linearGradient>
+
+    <!-- Drop Shadows for 3D Window Layering -->
+    <filter id="frontShadow" x="-30%" y="-30%" width="170%" height="170%">
+      <feDropShadow dx="-8" dy="18" stdDeviation="22" flood-color="#000000" flood-opacity="0.75" />
+    </filter>
+    <filter id="backShadow" x="-30%" y="-30%" width="170%" height="170%">
+      <feDropShadow dx="0" dy="10" stdDeviation="16" flood-color="#000000" flood-opacity="0.45" />
+    </filter>
+  </defs>
+
+  <!-- 1. Background Squircle Canvas (matches macOS / GNOME icon spec) -->
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#canvasGrad)" stroke="#383834" stroke-width="4" />
+
+  <!-- 2. Back Window (Offset Top-Right) -->
+  <g transform="translate(186, 106)" filter="url(#backShadow)">
+    <rect x="0" y="0" width="220" height="220" rx="36" fill="#272623" stroke="#484741" stroke-width="8" />
+    <path d="M 0,36 A 36,36 0 0,1 36,0 L 184,0 A 36,36 0 0,1 220,36 L 220,56 L 0,56 Z" fill="#33322d" />
+    <circle cx="34" cy="28" r="6.5" fill="#5e5c54" />
+    <circle cx="56" cy="28" r="6.5" fill="#5e5c54" />
+    <circle cx="78" cy="28" r="6.5" fill="#5e5c54" />
+  </g>
+
+  <!-- 3. Front Window (Offset Bottom-Left) -->
+  <g transform="translate(106, 186)" filter="url(#frontShadow)">
+    <rect x="0" y="0" width="220" height="220" rx="36" fill="#1e1e1d" stroke="#d97757" stroke-width="8" />
+    <path d="M 0,36 A 36,36 0 0,1 36,0 L 184,0 A 36,36 0 0,1 220,36 L 220,56 L 0,56 Z" fill="url(#coralGrad)" />
+    <circle cx="34" cy="28" r="6.5" fill="#1b1b1a" opacity="0.6" />
+    <circle cx="56" cy="28" r="6.5" fill="#1b1b1a" opacity="0.6" />
+    <circle cx="78" cy="28" r="6.5" fill="#1b1b1a" opacity="0.6" />
+
+    <!-- Subtle Application Structure -->
+    <rect x="28" y="80" width="54" height="112" rx="12" fill="#282724" stroke="#383834" stroke-width="2.5" />
+    <rect x="94" y="80" width="98" height="50" rx="10" fill="#282724" stroke="#383834" stroke-width="2.5" />
+    <rect x="94" y="142" width="98" height="50" rx="10" fill="#282724" stroke="#383834" stroke-width="2.5" />
+  </g>
+</svg>

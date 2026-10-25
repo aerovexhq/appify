@@ -1,5 +1,5 @@
-import { AppWindow, Settings, HelpCircle, Terminal } from 'lucide-react';
-import { StrataTitlebar, Button, Tooltip } from '@aerovex/strata-ui';
+import { Settings, HelpCircle, Terminal } from 'lucide-react';
+import { AppifyMark, StrataTitlebar, Button, Tooltip } from '@aerovex/strata-ui';
 import { useAppifyStore } from '../../state/useAppifyStore';
 
 export function Titlebar() {
@@ -12,7 +12,7 @@ export function Titlebar() {
 
   const brandIcon = (
     <div className="w-6 h-6 rounded-lg bg-raised border border-border flex items-center justify-center shadow-xs">
-      <AppWindow className="w-3.5 h-3.5 text-accent" />
+      <AppifyMark className="w-4 h-4" />
     </div>
   );
 

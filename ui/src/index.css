@@ -8,14 +8,23 @@
 @layer base {
   :root {
     --k-bg: #1b1b1a;
+    --k-bg-rgb: 27 27 26;
     --k-surface: #232321;
+    --k-surface-rgb: 35 35 33;
     --k-raised: #2c2c29;
+    --k-raised-rgb: 44 44 41;
     --k-border: #3a3a36;
+    --k-border-rgb: 58 58 54;
     --k-fg: #ece9e1;
+    --k-fg-rgb: 236 233 225;
     --k-muted: #98958c;
+    --k-muted-rgb: 152 149 140;
     --k-accent: #d97757;
+    --k-accent-rgb: 217 119 87;
     --k-accent-fg: #1b1b1a;
+    --k-accent-fg-rgb: 27 27 26;
     --k-danger: #e5645a;
+    --k-danger-rgb: 229 100 90;
     --ease-tactile: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
