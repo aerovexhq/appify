@@ -48,11 +48,11 @@ export function AppCard({ app, onEdit }: AppCardProps) {
   };
 
   return (
-    <div className="relative group rounded-xl bg-surface border border-border hover:border-white/15 p-4 transition-all duration-200 flex flex-col justify-between hover:shadow-[0_4px_24px_rgba(0,0,0,0.3)]">
+    <div className="relative group rounded-2xl bg-surface border border-border hover:border-white/20 p-4.5 transition-all duration-200 flex flex-col justify-between hover:shadow-[0_8px_30px_rgba(0,0,0,0.25)]">
       <div>
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-lg bg-raised border border-border flex items-center justify-center overflow-hidden shrink-0 group-hover:border-white/20 transition-colors">
+            <div className="w-11 h-11 rounded-xl bg-raised border border-border flex items-center justify-center overflow-hidden shrink-0 group-hover:border-white/20 transition-colors shadow-xs">
               {app.icon_base64 ? (
                 <img
                   src={`data:image/png;base64,${app.icon_base64}`}
@@ -69,7 +69,7 @@ export function AppCard({ app, onEdit }: AppCardProps) {
                   }}
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center font-bold text-sm text-accent bg-accent/10">
+                <div className="w-full h-full flex items-center justify-center font-bold text-sm text-accent bg-raised">
                   {app.name.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -102,7 +102,7 @@ export function AppCard({ app, onEdit }: AppCardProps) {
             {app.wm_class}
           </span>
           {app.autostart && (
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-accent/15 text-accent font-medium">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-raised text-accent font-medium">
               Autostart
             </span>
           )}
@@ -112,7 +112,7 @@ export function AppCard({ app, onEdit }: AppCardProps) {
             </span>
           )}
           {app.has_custom_scripts && (
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-medium">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-raised text-emerald-400 font-medium">
               UserScripts
             </span>
           )}

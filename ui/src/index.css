@@ -1,3 +1,6 @@
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/jetbrains-mono";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,12 +11,17 @@
   }
 
   body {
+    font-family: "Inter Variable", system-ui, -apple-system, sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     margin: 0;
     padding: 0;
     user-select: none;
     -webkit-user-select: none;
-    background-color: var(--bg-primary, #0f1015);
-    color: var(--text-primary, #fbfbfa);
+    background-color: var(--k-bg, #1b1b1a);
+    color: var(--k-fg, #ece9e1);
+  }
+
+  code, pre, kbd {
+    font-family: "JetBrains Mono Variable", ui-monospace, monospace;
   }
 }

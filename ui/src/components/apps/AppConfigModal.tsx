@@ -139,27 +139,27 @@ export function AppConfigModal({ app, open, onOpenChange }: AppConfigModalProps)
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-        <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised/50 border border-border">
+        <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised border border-border">
           <span className="text-xs text-fg">Single Instance</span>
           <Switch checked={singleInstance} onCheckedChange={setSingleInstance} />
         </div>
-        <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised/50 border border-border">
+        <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised border border-border">
           <span className="text-xs text-fg">Hide Window on Close</span>
           <Switch checked={hideOnClose} onCheckedChange={setHideOnClose} />
         </div>
-        <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised/50 border border-border">
+        <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised border border-border">
           <span className="text-xs text-fg">System Tray Icon</span>
           <Switch checked={tray} onCheckedChange={setTray} />
         </div>
-        <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised/50 border border-border">
+        <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised border border-border">
           <span className="text-xs text-fg">Start Minimized / Hidden</span>
           <Switch checked={startHidden} onCheckedChange={setStartHidden} />
         </div>
-        <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised/50 border border-border">
+        <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised border border-border">
           <span className="text-xs text-fg">Autostart on Login</span>
           <Switch checked={autostart} onCheckedChange={setAutostart} />
         </div>
-        <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised/50 border border-border">
+        <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised border border-border">
           <span className="text-xs text-fg">Autostart Hidden in Tray</span>
           <Switch checked={autostartHidden} onCheckedChange={setAutostartHidden} />
         </div>
@@ -192,7 +192,7 @@ export function AppConfigModal({ app, open, onOpenChange }: AppConfigModalProps)
         </div>
       </div>
 
-      <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised/50 border border-border">
+      <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised border border-border">
         <div>
           <span className="text-xs text-fg block font-medium">Launch Maximized</span>
           <span className="text-[11px] text-muted">Span window across entire display surface</span>

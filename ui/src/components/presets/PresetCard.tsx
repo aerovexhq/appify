@@ -28,11 +28,11 @@ export function PresetCard({ preset }: PresetCardProps) {
   };
 
   return (
-    <div className="relative group rounded-xl bg-surface border border-border hover:border-white/15 p-4 transition-all duration-200 flex flex-col justify-between hover:shadow-[0_4px_24px_rgba(0,0,0,0.3)]">
+    <div className="relative group rounded-2xl bg-surface border border-border hover:border-white/20 p-4.5 transition-all duration-200 flex flex-col justify-between hover:shadow-[0_8px_30px_rgba(0,0,0,0.25)]">
       <div>
         <div className="flex items-start justify-between gap-3 mb-2.5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-raised border border-border flex items-center justify-center font-bold text-sm text-accent bg-accent/10 shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-raised border border-border flex items-center justify-center font-bold text-sm text-accent bg-raised shrink-0 shadow-xs">
               {preset.name.charAt(0).toUpperCase()}
             </div>
             <div>

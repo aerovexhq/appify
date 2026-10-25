@@ -46,7 +46,7 @@ export function MarketplaceView() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-lg font-semibold text-fg tracking-tight">Marketplace Catalog</h1>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-accent/15 text-accent font-medium">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-raised text-accent font-medium">
               Verified CDN
             </span>
           </div>

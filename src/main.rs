@@ -4962,6 +4962,8 @@ fn execute_gui_manager() {
             .title("Appify — Desktop Web App Manager")
             .inner_size(1120.0, 750.0)
             .min_inner_size(860.0, 580.0)
+            .decorations(false)
+            .shadow(true)
             .center()
             .disable_drag_drop_handler()
             .initialization_script(r#"

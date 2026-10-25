@@ -78,7 +78,7 @@ export function ExtensionsView() {
           {items.map((item) => (
             <div
               key={item.id}
-              className="p-4 rounded-xl bg-surface/60 border border-border flex flex-col justify-between gap-3"
+              className="p-4 rounded-xl bg-surface border border-border flex flex-col justify-between gap-3"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
@@ -96,7 +96,7 @@ export function ExtensionsView() {
                         v{item.version}
                       </span>
                       {item.is_builtin && (
-                        <span className="text-[10px] font-mono text-accent px-2 py-0.5 rounded-full bg-accent/15 flex items-center gap-1 font-medium">
+                        <span className="text-[10px] font-mono text-accent px-2 py-0.5 rounded-full bg-raised flex items-center gap-1 font-medium">
                           <ShieldCheck className="w-2.5 h-2.5" />
                           <span>Built-in</span>
                         </span>

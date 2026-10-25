@@ -48,13 +48,13 @@ export function AppGrid() {
 
         <div className="flex items-center gap-2">
           <div className="relative w-64">
-            <Search className="w-3.5 h-3.5 text-muted absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-3.5 h-3.5 text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search applications..."
-              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md bg-raised border border-border text-fg placeholder:text-muted focus:outline-none focus:border-white/20 transition-colors"
+              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-pill bg-raised border border-border text-fg placeholder:text-muted focus:outline-none focus:border-white/30 transition-colors"
             />
           </div>
 
@@ -62,7 +62,7 @@ export function AppGrid() {
             variant="ghost"
             onClick={handleRefresh}
             disabled={refreshing}
-            className="h-8 w-8 p-0 text-muted hover:text-fg justify-center"
+            className="h-8 w-8 p-0 rounded-pill text-muted hover:text-fg justify-center"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
           </Button>
@@ -70,7 +70,7 @@ export function AppGrid() {
           <Button
             variant="primary"
             onClick={() => setActiveTab('wizard')}
-            className="h-8 px-3 text-xs gap-1.5 justify-center"
+            className="h-8 px-3.5 text-xs rounded-pill font-medium gap-1.5 justify-center shadow-xs"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Create New App</span>

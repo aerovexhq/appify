@@ -99,7 +99,7 @@ export function NewAppWizard() {
 
   const basicsContent = (
     <div className="space-y-4 pt-1">
-      <div className="p-4 rounded-xl bg-surface/50 border border-border space-y-3.5">
+      <div className="p-4 rounded-xl bg-surface border border-border space-y-3.5">
         <div>
           <label className="text-xs font-medium text-fg block mb-1.5 flex items-center gap-1.5">
             <Globe className="w-3.5 h-3.5 text-accent" />
@@ -155,10 +155,10 @@ export function NewAppWizard() {
         </div>
       </div>
 
-      <div className="p-4 rounded-xl bg-surface/50 border border-border space-y-3">
+      <div className="p-4 rounded-xl bg-surface border border-border space-y-3">
         <span className="text-xs font-semibold text-fg block">Process & Behavior Policies</span>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised/50 border border-border">
+          <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised border border-border">
             <div>
               <span className="text-xs text-fg block">Single Instance</span>
               <span className="text-[10px] text-muted">Focus existing window</span>
@@ -166,7 +166,7 @@ export function NewAppWizard() {
             <Switch checked={singleInstance} onCheckedChange={setSingleInstance} />
           </div>
 
-          <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised/50 border border-border">
+          <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised border border-border">
             <div>
               <span className="text-xs text-fg block">Hide on Close</span>
               <span className="text-[10px] text-muted">Minimize to background tray</span>
@@ -174,7 +174,7 @@ export function NewAppWizard() {
             <Switch checked={hideOnClose} onCheckedChange={setHideOnClose} />
           </div>
 
-          <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised/50 border border-border">
+          <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised border border-border">
             <div>
               <span className="text-xs text-fg block">System Tray Icon</span>
               <span className="text-[10px] text-muted">Enable tray menu integration</span>
@@ -182,7 +182,7 @@ export function NewAppWizard() {
             <Switch checked={tray} onCheckedChange={setTray} />
           </div>
 
-          <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised/50 border border-border">
+          <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised border border-border">
             <div>
               <span className="text-xs text-fg block">Start Minimized</span>
               <span className="text-[10px] text-muted">Launch hidden on startup</span>
@@ -190,7 +190,7 @@ export function NewAppWizard() {
             <Switch checked={startHidden} onCheckedChange={setStartHidden} />
           </div>
 
-          <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised/50 border border-border">
+          <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised border border-border">
             <div>
               <span className="text-xs text-fg block">Autostart on Login</span>
               <span className="text-[10px] text-muted">Launch during desktop session</span>
@@ -198,7 +198,7 @@ export function NewAppWizard() {
             <Switch checked={autostart} onCheckedChange={setAutostart} />
           </div>
 
-          <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised/50 border border-border">
+          <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised border border-border">
             <div>
               <span className="text-xs text-fg block">Autostart Hidden</span>
               <span className="text-[10px] text-muted">Autostart silently into tray</span>
@@ -212,7 +212,7 @@ export function NewAppWizard() {
 
   const windowContent = (
     <div className="space-y-4 pt-1">
-      <div className="p-4 rounded-xl bg-surface/50 border border-border space-y-4">
+      <div className="p-4 rounded-xl bg-surface border border-border space-y-4">
         <span className="text-xs font-semibold text-fg block">Initial Window Dimensions</span>
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -237,7 +237,7 @@ export function NewAppWizard() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised/50 border border-border">
+        <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised border border-border">
           <div>
             <span className="text-xs text-fg block">Launch Window Maximized</span>
             <span className="text-[10px] text-muted">Default to full display surface on process spawn</span>
@@ -262,7 +262,7 @@ export function NewAppWizard() {
 
   const scriptsContent = (
     <div className="space-y-4 pt-1">
-      <div className="p-4 rounded-xl bg-surface/50 border border-border space-y-4">
+      <div className="p-4 rounded-xl bg-surface border border-border space-y-4">
         <div>
           <label className="text-xs font-medium text-fg block mb-1.5">
             Injected UserScript (JavaScript)

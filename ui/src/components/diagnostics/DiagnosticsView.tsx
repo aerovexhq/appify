@@ -40,7 +40,7 @@ export function DiagnosticsView() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div className="p-4 rounded-xl bg-surface/60 border border-border space-y-3">
+        <div className="p-4 rounded-xl bg-surface border border-border space-y-3">
           <div className="flex items-center gap-2">
             <HardDrive className="w-4 h-4 text-accent" />
             <span className="text-xs font-semibold text-fg">Host File System Topology</span>
@@ -49,26 +49,26 @@ export function DiagnosticsView() {
           <div className="space-y-2 text-xs font-mono">
             <div>
               <span className="text-muted block text-[10px]">Profiles Root</span>
-              <span className="text-fg truncate block bg-raised/70 px-2 py-1 rounded border border-border">
+              <span className="text-fg truncate block bg-raised px-2 py-1 rounded border border-border">
                 {systemInfo?.profiles_dir || '~/.local/share/appify/profiles'}
               </span>
             </div>
             <div>
               <span className="text-muted block text-[10px]">Desktop Applications (.desktop)</span>
-              <span className="text-fg truncate block bg-raised/70 px-2 py-1 rounded border border-border">
+              <span className="text-fg truncate block bg-raised px-2 py-1 rounded border border-border">
                 {systemInfo?.applications_dir || '~/.local/share/applications'}
               </span>
             </div>
             <div>
               <span className="text-muted block text-[10px]">Session Autostart Entries</span>
-              <span className="text-fg truncate block bg-raised/70 px-2 py-1 rounded border border-border">
+              <span className="text-fg truncate block bg-raised px-2 py-1 rounded border border-border">
                 {systemInfo?.autostart_dir || '~/.config/autostart'}
               </span>
             </div>
           </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-surface/60 border border-border flex flex-col justify-between">
+        <div className="p-4 rounded-xl bg-surface border border-border flex flex-col justify-between">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-accent" />
