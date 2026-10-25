@@ -4,7 +4,6 @@
   "identifier": "net.aerovex.appify",
   "build": {
     "beforeBuildCommand": "cd ui && npm run build",
-    "devUrl": "http://localhost:5173",
     "frontendDist": "ui/dist"
   },
   "app": {
