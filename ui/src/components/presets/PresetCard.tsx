@@ -28,7 +28,7 @@ export function PresetCard({ preset }: PresetCardProps) {
   };
 
   return (
-    <div className="relative group rounded-xl bg-surface/60 border border-border hover:border-accent/40 p-4 transition-all duration-200 flex flex-col justify-between hover:shadow-[0_4px_24px_rgba(0,0,0,0.4)]">
+    <div className="relative group rounded-xl bg-surface border border-border hover:border-white/15 p-4 transition-all duration-200 flex flex-col justify-between hover:shadow-[0_4px_24px_rgba(0,0,0,0.3)]">
       <div>
         <div className="flex items-start justify-between gap-3 mb-2.5">
           <div className="flex items-center gap-3">
@@ -39,7 +39,7 @@ export function PresetCard({ preset }: PresetCardProps) {
               <h3 className="text-sm font-semibold text-fg group-hover:text-accent transition-colors">
                 {preset.name}
               </h3>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-raised border border-border text-muted">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-raised text-muted">
                 {preset.category}
               </span>
             </div>
@@ -48,7 +48,7 @@ export function PresetCard({ preset }: PresetCardProps) {
           {preset.is_installed ? (
             <StatusBadge status="online" label="INSTALLED" />
           ) : (
-            <span className="text-[10px] font-mono text-muted px-2 py-0.5 rounded bg-raised border border-border">
+            <span className="text-[10px] font-mono text-muted px-2 py-0.5 rounded-full bg-raised">
               READY
             </span>
           )}

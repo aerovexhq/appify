@@ -44,20 +44,20 @@ export function Sidebar() {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition-all ${
+              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium cursor-pointer transition-colors ${
                 isActive
-                  ? 'bg-accent/15 text-accent border border-accent/40 shadow-sm'
-                  : 'text-muted hover:text-fg hover:bg-raised/70 border border-transparent'
+                  ? 'bg-raised text-fg shadow-xs font-semibold'
+                  : 'text-muted hover:text-fg hover:bg-raised/60'
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <Icon className={`w-4 h-4 ${isActive ? 'text-accent' : 'text-muted'}`} />
+                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-accent' : 'text-muted'}`} />
                 <span>{item.label}</span>
               </div>
               {count !== null && (
                 <span
-                  className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
-                    isActive ? 'bg-accent/25 text-accent' : 'bg-raised text-muted'
+                  className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full ${
+                    isActive ? 'bg-surface text-accent font-semibold' : 'bg-surface/80 text-muted'
                   }`}
                 >
                   {count}
@@ -71,14 +71,14 @@ export function Sidebar() {
       <div className="pt-3 border-t border-border space-y-1">
         <button
           onClick={() => setSettingsModalOpen(true)}
-          className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs text-muted hover:text-fg hover:bg-raised/70 transition-colors"
+          className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs text-muted hover:text-fg hover:bg-raised/60 transition-colors cursor-pointer"
         >
-          <Settings className="w-4 h-4 text-muted" />
+          <Settings className="w-3.5 h-3.5 text-muted" />
           <span>Bundler Settings</span>
         </button>
         <div className="px-2.5 pt-2 flex items-center justify-between text-[10px] text-muted font-mono">
           <span>Profile Partitioning</span>
-          <span className="text-accent font-semibold">Active</span>
+          <span className="text-emerald-400 font-medium">Active</span>
         </div>
       </div>
     </aside>

@@ -48,11 +48,11 @@ export function AppCard({ app, onEdit }: AppCardProps) {
   };
 
   return (
-    <div className="relative group rounded-xl bg-surface/60 border border-border hover:border-accent/40 p-4 transition-all duration-200 flex flex-col justify-between hover:shadow-[0_4px_24px_rgba(0,0,0,0.4)]">
+    <div className="relative group rounded-xl bg-surface border border-border hover:border-white/15 p-4 transition-all duration-200 flex flex-col justify-between hover:shadow-[0_4px_24px_rgba(0,0,0,0.3)]">
       <div>
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-lg bg-raised border border-border flex items-center justify-center overflow-hidden shrink-0 group-hover:border-accent/40 transition-colors">
+            <div className="w-11 h-11 rounded-lg bg-raised border border-border flex items-center justify-center overflow-hidden shrink-0 group-hover:border-white/20 transition-colors">
               {app.icon_base64 ? (
                 <img
                   src={`data:image/png;base64,${app.icon_base64}`}
@@ -98,21 +98,21 @@ export function AppCard({ app, onEdit }: AppCardProps) {
         </div>
 
         <div className="flex flex-wrap gap-1.5 my-3">
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-raised border border-border text-muted">
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-raised text-muted">
             {app.wm_class}
           </span>
           {app.autostart && (
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-accent/10 border border-accent/30 text-accent">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-accent/15 text-accent font-medium">
               Autostart
             </span>
           )}
           {app.tray && (
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-raised border border-border text-muted">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-raised text-muted">
               Tray
             </span>
           )}
           {app.has_custom_scripts && (
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-medium">
               UserScripts
             </span>
           )}
@@ -121,12 +121,12 @@ export function AppCard({ app, onEdit }: AppCardProps) {
 
       <div className="pt-3 border-t border-border flex items-center justify-between gap-2 mt-2">
         <Button
-          variant="primary"
+          variant="secondary"
           onClick={handleLaunch}
           disabled={busy}
-          className="flex-1 h-8 text-xs gap-1.5 font-medium justify-center"
+          className="flex-1 h-8 text-xs gap-1.5 font-medium justify-center hover:text-accent hover:border-accent"
         >
-          <Play className="w-3.5 h-3.5 fill-current" />
+          <Play className="w-3.5 h-3.5 fill-current text-accent" />
           <span>Launch</span>
         </Button>
 

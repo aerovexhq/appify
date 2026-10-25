@@ -31,7 +31,7 @@ export function PresetStore() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-lg font-semibold text-fg tracking-tight">Curated Presets</h1>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-accent/15 text-accent border border-accent/30 font-medium">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-accent/15 text-accent font-medium">
               Verified Profiles
             </span>
           </div>
@@ -47,7 +47,7 @@ export function PresetStore() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search preset catalog..."
-            className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-surface border border-border text-fg placeholder:text-muted focus:outline-none focus:border-accent transition-colors"
+            className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md bg-raised border border-border text-fg placeholder:text-muted focus:outline-none focus:border-white/20 transition-colors"
           />
         </div>
       </div>
@@ -59,10 +59,10 @@ export function PresetStore() {
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+              className={`px-3 py-1 rounded-full text-xs font-medium cursor-pointer transition-colors ${
                 isSelected
-                  ? 'bg-accent/15 text-accent border border-accent/40 shadow-sm'
-                  : 'text-muted hover:text-fg hover:bg-raised/70 border border-transparent'
+                  ? 'bg-raised text-fg shadow-xs font-semibold'
+                  : 'text-muted hover:text-fg hover:bg-raised/60'
               }`}
             >
               {cat}

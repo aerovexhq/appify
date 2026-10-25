@@ -46,7 +46,7 @@ export function MarketplaceView() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-lg font-semibold text-fg tracking-tight">Marketplace Catalog</h1>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-accent/15 text-accent border border-accent/30 font-medium">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-accent/15 text-accent font-medium">
               Verified CDN
             </span>
           </div>
@@ -90,7 +90,7 @@ export function MarketplaceView() {
               return (
                 <div
                   key={item.id}
-                  className="p-4 rounded-xl bg-surface/60 border border-border hover:border-accent/40 transition-all flex flex-col justify-between"
+                  className="p-4 rounded-xl bg-surface border border-border hover:border-white/15 transition-all flex flex-col justify-between hover:shadow-[0_4px_24px_rgba(0,0,0,0.3)]"
                 >
                   <div>
                     <div className="flex items-start justify-between gap-3 mb-2.5">

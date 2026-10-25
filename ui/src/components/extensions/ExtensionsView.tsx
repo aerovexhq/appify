@@ -92,11 +92,11 @@ export function ExtensionsView() {
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="text-sm font-semibold text-fg">{item.name}</h3>
-                      <span className="text-[10px] font-mono text-muted px-1.5 py-0.5 rounded bg-raised border border-border">
+                      <span className="text-[10px] font-mono text-muted px-2 py-0.5 rounded-full bg-raised">
                         v{item.version}
                       </span>
                       {item.is_builtin && (
-                        <span className="text-[10px] font-mono text-accent px-1.5 py-0.5 rounded bg-accent/15 border border-accent/30 flex items-center gap-1">
+                        <span className="text-[10px] font-mono text-accent px-2 py-0.5 rounded-full bg-accent/15 flex items-center gap-1 font-medium">
                           <ShieldCheck className="w-2.5 h-2.5" />
                           <span>Built-in</span>
                         </span>
@@ -117,7 +117,7 @@ export function ExtensionsView() {
                 )}
               </div>
 
-              <div className="rounded-lg bg-raised/80 border border-border/80 p-3 max-h-36 overflow-y-auto font-mono text-[11px] text-muted leading-relaxed">
+              <div className="rounded-lg bg-raised border border-border p-3 max-h-36 overflow-y-auto font-mono text-[11px] text-muted leading-relaxed">
                 <pre className="whitespace-pre-wrap">{item.content}</pre>
               </div>
             </div>

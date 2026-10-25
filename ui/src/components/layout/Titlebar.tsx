@@ -16,14 +16,14 @@ export function Titlebar() {
       className="h-11 shrink-0 bg-surface/80 backdrop-blur-md border-b border-border flex items-center justify-between px-3 select-none z-30"
     >
       <div className="flex items-center gap-2.5" data-tauri-drag-region>
-        <div className="w-5 h-5 rounded-md bg-accent/20 border border-accent/40 flex items-center justify-center">
+        <div className="w-5 h-5 rounded-md bg-raised border border-border flex items-center justify-center">
           <AppWindow className="w-3 h-3 text-accent" />
         </div>
         <div className="flex items-baseline gap-2">
-          <span className="font-semibold text-xs tracking-wider text-fg uppercase">
+          <span className="font-semibold text-xs tracking-tight text-fg">
             Appify
           </span>
-          <span className="text-[10px] text-muted font-mono px-1.5 py-0.5 rounded bg-raised border border-border">
+          <span className="text-[10px] text-muted font-mono px-1.5 py-0.5 rounded-full bg-raised">
             v0.2.0
           </span>
         </div>

@@ -54,7 +54,7 @@ export function AppGrid() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search applications..."
-              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-surface border border-border text-fg placeholder:text-muted focus:outline-none focus:border-accent transition-colors"
+              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md bg-raised border border-border text-fg placeholder:text-muted focus:outline-none focus:border-white/20 transition-colors"
             />
           </div>
 
