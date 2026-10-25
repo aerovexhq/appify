@@ -7,6 +7,15 @@
 
 @layer base {
   :root {
+    --k-bg: #1b1b1a;
+    --k-surface: #232321;
+    --k-raised: #2c2c29;
+    --k-border: #3a3a36;
+    --k-fg: #ece9e1;
+    --k-muted: #98958c;
+    --k-accent: #d97757;
+    --k-accent-fg: #1b1b1a;
+    --k-danger: #e5645a;
     --ease-tactile: cubic-bezier(0.16, 1, 0.3, 1);
   }
 

@@ -48,11 +48,11 @@ export function AppCard({ app, onEdit }: AppCardProps) {
   };
 
   return (
-    <div className="relative group rounded-2xl bg-surface border border-border hover:border-white/20 p-4.5 transition-all duration-200 flex flex-col justify-between hover:shadow-[0_8px_30px_rgba(0,0,0,0.25)]">
+    <div className="relative group rounded-2xl bg-surface border border-border hover:border-white/20 p-5 sm:p-6 transition-all duration-200 flex flex-col justify-between hover:shadow-[0_8px_30px_rgba(0,0,0,0.25)]">
       <div>
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-raised border border-border flex items-center justify-center overflow-hidden shrink-0 group-hover:border-white/20 transition-colors shadow-xs">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-xl bg-raised border border-border flex items-center justify-center overflow-hidden shrink-0 group-hover:border-white/20 transition-colors shadow-xs">
               {app.icon_base64 ? (
                 <img
                   src={`data:image/png;base64,${app.icon_base64}`}
@@ -69,24 +69,24 @@ export function AppCard({ app, onEdit }: AppCardProps) {
                   }}
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center font-bold text-sm text-accent bg-raised">
+                <div className="w-full h-full flex items-center justify-center font-bold text-base text-accent bg-raised">
                   {app.name.charAt(0).toUpperCase()}
                 </div>
               )}
             </div>
 
             <div className="min-w-0">
-              <h3 className="text-sm font-semibold text-fg group-hover:text-accent transition-colors truncate">
+              <h3 className="text-base font-semibold text-fg group-hover:text-accent transition-colors truncate">
                 {app.name}
               </h3>
               <a
                 href={app.url}
                 target="_blank"
                 rel="noreferrer"
-                className="text-xs font-mono text-muted hover:text-accent flex items-center gap-1 truncate max-w-[200px]"
+                className="text-xs font-mono text-muted hover:text-accent flex items-center gap-1.5 truncate max-w-[210px] mt-0.5"
               >
                 <span>{app.url}</span>
-                <ExternalLink className="w-2.5 h-2.5 opacity-50 shrink-0" />
+                <ExternalLink className="w-3 h-3 opacity-50 shrink-0" />
               </a>
             </div>
           </div>
@@ -97,47 +97,47 @@ export function AppCard({ app, onEdit }: AppCardProps) {
           />
         </div>
 
-        <div className="flex flex-wrap gap-1.5 my-3">
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-raised text-muted">
+        <div className="flex flex-wrap gap-2 my-4">
+          <span className="text-xs font-mono px-2.5 py-1 rounded-lg bg-raised border border-border text-muted">
             {app.wm_class}
           </span>
           {app.autostart && (
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-raised text-accent font-medium">
+            <span className="text-xs font-mono px-2.5 py-1 rounded-lg bg-raised border border-accent/40 text-accent font-medium">
               Autostart
             </span>
           )}
           {app.tray && (
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-raised text-muted">
+            <span className="text-xs font-mono px-2.5 py-1 rounded-lg bg-raised border border-border text-muted">
               Tray
             </span>
           )}
           {app.has_custom_scripts && (
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-raised text-emerald-400 font-medium">
+            <span className="text-xs font-mono px-2.5 py-1 rounded-lg bg-raised border border-emerald-500/30 text-emerald-400 font-medium">
               UserScripts
             </span>
           )}
         </div>
       </div>
 
-      <div className="pt-3 border-t border-border flex items-center justify-between gap-2 mt-2">
+      <div className="pt-4 border-t border-border flex items-center justify-between gap-3 mt-4">
         <Button
           variant="secondary"
           onClick={handleLaunch}
           disabled={busy}
-          className="flex-1 h-8 text-xs gap-1.5 font-medium justify-center hover:text-accent hover:border-accent"
+          className="flex-1 h-9 px-4 text-xs gap-2 font-medium justify-center rounded-xl hover:text-accent hover:border-accent"
         >
           <Play className="w-3.5 h-3.5 fill-current text-accent" />
           <span>Launch</span>
         </Button>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           <Tooltip content="Edit Application Settings">
             <Button
               variant="ghost"
               onClick={() => onEdit(app)}
-              className="h-8 w-8 p-0 text-muted hover:text-fg justify-center"
+              className="h-9 w-9 p-0 rounded-xl text-muted hover:text-fg justify-center"
             >
-              <Settings className="w-3.5 h-3.5" />
+              <Settings className="w-4 h-4" />
             </Button>
           </Tooltip>
 
@@ -145,9 +145,9 @@ export function AppCard({ app, onEdit }: AppCardProps) {
             <Button
               variant="ghost"
               onClick={() => openFolder(app.hash)}
-              className="h-8 w-8 p-0 text-muted hover:text-fg justify-center"
+              className="h-9 w-9 p-0 rounded-xl text-muted hover:text-fg justify-center"
             >
-              <FolderOpen className="w-3.5 h-3.5" />
+              <FolderOpen className="w-4 h-4" />
             </Button>
           </Tooltip>
 
@@ -155,9 +155,9 @@ export function AppCard({ app, onEdit }: AppCardProps) {
             <Button
               variant="ghost"
               onClick={handleClearCache}
-              className="h-8 w-8 p-0 text-muted hover:text-fg justify-center"
+              className="h-9 w-9 p-0 rounded-xl text-muted hover:text-fg justify-center"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
+              <RotateCcw className="w-4 h-4" />
             </Button>
           </Tooltip>
 
@@ -165,7 +165,7 @@ export function AppCard({ app, onEdit }: AppCardProps) {
             <Button
               variant={confirmDelete ? 'secondary' : 'ghost'}
               onClick={handleUninstall}
-              className={`h-8 px-2 text-xs transition-colors justify-center ${
+              className={`h-9 px-3 rounded-xl text-xs transition-colors justify-center ${
                 confirmDelete ? 'bg-red-500/20 text-red-400 border border-red-500/40' : 'text-muted hover:text-red-400'
               }`}
             >

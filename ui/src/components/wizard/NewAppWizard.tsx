@@ -99,7 +99,7 @@ export function NewAppWizard() {
 
   const basicsContent = (
     <div className="space-y-4 pt-1">
-      <div className="p-4 rounded-xl bg-surface border border-border space-y-3.5">
+      <div className="p-5 sm:p-6 rounded-2xl bg-surface border border-border space-y-4">
         <div>
           <label className="text-xs font-medium text-fg block mb-1.5 flex items-center gap-1.5">
             <Globe className="w-3.5 h-3.5 text-accent" />
@@ -155,52 +155,52 @@ export function NewAppWizard() {
         </div>
       </div>
 
-      <div className="p-4 rounded-xl bg-surface border border-border space-y-3">
+      <div className="p-5 sm:p-6 rounded-2xl bg-surface border border-border space-y-4">
         <span className="text-xs font-semibold text-fg block">Process & Behavior Policies</span>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised border border-border">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-raised border border-border">
             <div>
-              <span className="text-xs text-fg block">Single Instance</span>
+              <span className="text-xs font-medium text-fg block">Single Instance</span>
               <span className="text-[10px] text-muted">Focus existing window</span>
             </div>
             <Switch checked={singleInstance} onCheckedChange={setSingleInstance} />
           </div>
 
-          <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised border border-border">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-raised border border-border">
             <div>
-              <span className="text-xs text-fg block">Hide on Close</span>
+              <span className="text-xs font-medium text-fg block">Hide on Close</span>
               <span className="text-[10px] text-muted">Minimize to background tray</span>
             </div>
             <Switch checked={hideOnClose} onCheckedChange={setHideOnClose} />
           </div>
 
-          <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised border border-border">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-raised border border-border">
             <div>
-              <span className="text-xs text-fg block">System Tray Icon</span>
+              <span className="text-xs font-medium text-fg block">System Tray Icon</span>
               <span className="text-[10px] text-muted">Enable tray menu integration</span>
             </div>
             <Switch checked={tray} onCheckedChange={setTray} />
           </div>
 
-          <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised border border-border">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-raised border border-border">
             <div>
-              <span className="text-xs text-fg block">Start Minimized</span>
+              <span className="text-xs font-medium text-fg block">Start Minimized</span>
               <span className="text-[10px] text-muted">Launch hidden on startup</span>
             </div>
             <Switch checked={startHidden} onCheckedChange={setStartHidden} />
           </div>
 
-          <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised border border-border">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-raised border border-border">
             <div>
-              <span className="text-xs text-fg block">Autostart on Login</span>
+              <span className="text-xs font-medium text-fg block">Autostart on Login</span>
               <span className="text-[10px] text-muted">Launch during desktop session</span>
             </div>
             <Switch checked={autostart} onCheckedChange={setAutostart} />
           </div>
 
-          <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised border border-border">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-raised border border-border">
             <div>
-              <span className="text-xs text-fg block">Autostart Hidden</span>
+              <span className="text-xs font-medium text-fg block">Autostart Hidden</span>
               <span className="text-[10px] text-muted">Autostart silently into tray</span>
             </div>
             <Switch checked={autostartHidden} onCheckedChange={setAutostartHidden} />
@@ -212,9 +212,9 @@ export function NewAppWizard() {
 
   const windowContent = (
     <div className="space-y-4 pt-1">
-      <div className="p-4 rounded-xl bg-surface border border-border space-y-4">
+      <div className="p-5 sm:p-6 rounded-2xl bg-surface border border-border space-y-5">
         <span className="text-xs font-semibold text-fg block">Initial Window Dimensions</span>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="text-xs font-medium text-muted block mb-1.5">Initial Width (px)</label>
             <TextInput
@@ -237,9 +237,9 @@ export function NewAppWizard() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between p-2.5 rounded-lg bg-raised border border-border">
+        <div className="flex items-center justify-between p-3 rounded-xl bg-raised border border-border">
           <div>
-            <span className="text-xs text-fg block">Launch Window Maximized</span>
+            <span className="text-xs font-medium text-fg block">Launch Window Maximized</span>
             <span className="text-[10px] text-muted">Default to full display surface on process spawn</span>
           </div>
           <Switch checked={maximize} onCheckedChange={setMaximize} />
@@ -262,7 +262,7 @@ export function NewAppWizard() {
 
   const scriptsContent = (
     <div className="space-y-4 pt-1">
-      <div className="p-4 rounded-xl bg-surface border border-border space-y-4">
+      <div className="p-5 sm:p-6 rounded-2xl bg-surface border border-border space-y-5">
         <div>
           <label className="text-xs font-medium text-fg block mb-1.5">
             Injected UserScript (JavaScript)
@@ -272,7 +272,7 @@ export function NewAppWizard() {
             onChange={(e) => setJsCode(e.target.value)}
             rows={5}
             placeholder="// Custom JavaScript executed on page load\nconsole.log('Appify injected user script');"
-            className="w-full font-mono text-xs p-3 rounded-lg bg-raised border border-border text-fg focus:outline-none focus:border-accent resize-none"
+            className="w-full font-mono text-xs p-3.5 rounded-xl bg-raised border border-border text-fg focus:outline-none focus:border-accent resize-none"
           />
         </div>
 
@@ -285,7 +285,7 @@ export function NewAppWizard() {
             onChange={(e) => setCssCode(e.target.value)}
             rows={5}
             placeholder="/* Custom CSS overrides */\nbody { font-feature-settings: 'cv02', 'cv03'; }"
-            className="w-full font-mono text-xs p-3 rounded-lg bg-raised border border-border text-fg focus:outline-none focus:border-accent resize-none"
+            className="w-full font-mono text-xs p-3.5 rounded-xl bg-raised border border-border text-fg focus:outline-none focus:border-accent resize-none"
           />
         </div>
       </div>
@@ -293,10 +293,10 @@ export function NewAppWizard() {
   );
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 px-6 py-4 max-w-3xl">
-      <div className="mb-4">
-        <h1 className="text-lg font-semibold text-fg tracking-tight">Create Desktop Application</h1>
-        <p className="text-xs text-muted">
+    <div className="flex-1 flex flex-col min-h-0 p-6 sm:p-8 max-w-3xl">
+      <div className="mb-6">
+        <h1 className="text-xl font-semibold text-fg tracking-tight">Create Desktop Application</h1>
+        <p className="text-xs text-muted mt-0.5">
           Transform any public or internal web application into an isolated desktop process with native windowing.
         </p>
       </div>
@@ -314,13 +314,13 @@ export function NewAppWizard() {
         />
 
         {error && (
-          <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
+          <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
             {error}
           </div>
         )}
 
         <div className="pt-4 border-t border-border flex items-center justify-between">
-          <Button variant="secondary" onClick={() => setActiveTab('apps')}>
+          <Button variant="secondary" onClick={() => setActiveTab('apps')} className="h-9 px-4 rounded-xl">
             Cancel
           </Button>
 
@@ -328,7 +328,7 @@ export function NewAppWizard() {
             variant="primary"
             onClick={handleAssemble}
             disabled={submitting || !url.trim()}
-            className="gap-2 font-medium px-4 h-9"
+            className="gap-2 font-medium px-4 h-9 rounded-xl shadow-xs"
           >
             <Sparkles className="w-4 h-4" />
             <span>{submitting ? 'Assembling Application...' : 'Assemble Native Application'}</span>

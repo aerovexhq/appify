@@ -78,11 +78,11 @@ export function ExtensionsView() {
           {items.map((item) => (
             <div
               key={item.id}
-              className="p-4 rounded-xl bg-surface border border-border flex flex-col justify-between gap-3"
+              className="p-5 sm:p-6 rounded-2xl bg-surface border border-border flex flex-col justify-between gap-4"
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-raised border border-border flex items-center justify-center shrink-0">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-11 h-11 rounded-xl bg-raised border border-border flex items-center justify-center shrink-0 shadow-xs">
                     {item.category === 'plugin' ? (
                       <Code2 className="w-4 h-4 text-accent" />
                     ) : (
@@ -91,18 +91,18 @@ export function ExtensionsView() {
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-semibold text-fg">{item.name}</h3>
-                      <span className="text-[10px] font-mono text-muted px-2 py-0.5 rounded-full bg-raised">
+                      <h3 className="text-base font-semibold text-fg">{item.name}</h3>
+                      <span className="text-xs font-mono text-muted px-2.5 py-0.5 rounded-lg bg-raised border border-border">
                         v{item.version}
                       </span>
                       {item.is_builtin && (
-                        <span className="text-[10px] font-mono text-accent px-2 py-0.5 rounded-full bg-raised flex items-center gap-1 font-medium">
-                          <ShieldCheck className="w-2.5 h-2.5" />
+                        <span className="text-xs font-mono text-accent px-2.5 py-0.5 rounded-lg bg-raised border border-accent/40 flex items-center gap-1 font-medium">
+                          <ShieldCheck className="w-3 h-3" />
                           <span>Built-in</span>
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-muted mt-0.5">{item.description}</p>
+                    <p className="text-xs text-muted mt-1 leading-relaxed">{item.description}</p>
                   </div>
                 </div>
 
@@ -110,14 +110,14 @@ export function ExtensionsView() {
                   <Button
                     variant="ghost"
                     onClick={() => handleDelete(item.id)}
-                    className="h-8 w-8 p-0 text-muted hover:text-red-400 justify-center"
+                    className="h-9 w-9 p-0 rounded-xl text-muted hover:text-red-400 justify-center"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-4 h-4" />
                   </Button>
                 )}
               </div>
 
-              <div className="rounded-lg bg-raised border border-border p-3 max-h-36 overflow-y-auto font-mono text-[11px] text-muted leading-relaxed">
+              <div className="rounded-xl bg-raised border border-border p-3.5 max-h-36 overflow-y-auto font-mono text-xs text-muted leading-relaxed">
                 <pre className="whitespace-pre-wrap">{item.content}</pre>
               </div>
             </div>
@@ -128,11 +128,11 @@ export function ExtensionsView() {
   );
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 px-6 py-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+    <div className="flex-1 flex flex-col min-h-0 p-6 sm:p-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-lg font-semibold text-fg tracking-tight">Extensions & UserScripts</h1>
-          <p className="text-xs text-muted">
+          <h1 className="text-xl font-semibold text-fg tracking-tight">Extensions & UserScripts</h1>
+          <p className="text-xs text-muted mt-0.5">
             Reusable JavaScript extensions and CSS themes injected into your desktop web apps.
           </p>
         </div>
@@ -140,7 +140,7 @@ export function ExtensionsView() {
         <Button
           variant="primary"
           onClick={() => setAddModalOpen(true)}
-          className="h-8 px-3 text-xs gap-1.5 justify-center"
+          className="h-9 px-4 text-xs gap-2 font-medium justify-center rounded-xl shadow-xs"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Add {activeTab === 'plugins' ? 'Plugin (JS)' : 'Theme (CSS)'}</span>

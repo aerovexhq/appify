@@ -31,60 +31,60 @@ export function DiagnosticsView() {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 px-6 py-4 space-y-4">
+    <div className="flex-1 flex flex-col min-h-0 p-6 sm:p-8 space-y-6">
       <div>
-        <h1 className="text-lg font-semibold text-fg tracking-tight">Diagnostics & Runtime Environment</h1>
-        <p className="text-xs text-muted">
+        <h1 className="text-xl font-semibold text-fg tracking-tight">Diagnostics & Runtime Environment</h1>
+        <p className="text-xs text-muted mt-0.5">
           System paths, WebKit profile data directories, execution event telemetry, and cache maintenance.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div className="p-4 rounded-xl bg-surface border border-border space-y-3">
-          <div className="flex items-center gap-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="p-5 sm:p-6 rounded-2xl bg-surface border border-border space-y-4">
+          <div className="flex items-center gap-2.5">
             <HardDrive className="w-4 h-4 text-accent" />
-            <span className="text-xs font-semibold text-fg">Host File System Topology</span>
+            <span className="text-sm font-semibold text-fg">Host File System Topology</span>
           </div>
 
-          <div className="space-y-2 text-xs font-mono">
+          <div className="space-y-3 text-xs font-mono">
             <div>
-              <span className="text-muted block text-[10px]">Profiles Root</span>
-              <span className="text-fg truncate block bg-raised px-2 py-1 rounded border border-border">
+              <span className="text-muted block text-xs mb-1">Profiles Root</span>
+              <span className="text-fg truncate block bg-raised px-3 py-1.5 rounded-lg border border-border">
                 {systemInfo?.profiles_dir || '~/.local/share/appify/profiles'}
               </span>
             </div>
             <div>
-              <span className="text-muted block text-[10px]">Desktop Applications (.desktop)</span>
-              <span className="text-fg truncate block bg-raised px-2 py-1 rounded border border-border">
+              <span className="text-muted block text-xs mb-1">Desktop Applications (.desktop)</span>
+              <span className="text-fg truncate block bg-raised px-3 py-1.5 rounded-lg border border-border">
                 {systemInfo?.applications_dir || '~/.local/share/applications'}
               </span>
             </div>
             <div>
-              <span className="text-muted block text-[10px]">Session Autostart Entries</span>
-              <span className="text-fg truncate block bg-raised px-2 py-1 rounded border border-border">
+              <span className="text-muted block text-xs mb-1">Session Autostart Entries</span>
+              <span className="text-fg truncate block bg-raised px-3 py-1.5 rounded-lg border border-border">
                 {systemInfo?.autostart_dir || '~/.config/autostart'}
               </span>
             </div>
           </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-surface border border-border flex flex-col justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
+        <div className="p-5 sm:p-6 rounded-2xl bg-surface border border-border flex flex-col justify-between">
+          <div className="space-y-2.5">
+            <div className="flex items-center gap-2.5">
               <Shield className="w-4 h-4 text-accent" />
-              <span className="text-xs font-semibold text-fg">System Binary & Maintenance</span>
+              <span className="text-sm font-semibold text-fg">System Binary & Maintenance</span>
             </div>
             <p className="text-xs text-muted leading-relaxed">
               Install the Appify CLI binary to <code className="text-fg font-mono">/usr/local/bin/appify</code> to invoke headless application packaging and WebKit profile management from your terminal.
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2 pt-3 border-t border-border mt-3">
+          <div className="flex flex-wrap gap-3 pt-4 border-t border-border mt-4">
             <Button
               variant={installedPath ? 'secondary' : 'primary'}
               onClick={handleSelfInstall}
               disabled={installing}
-              className="h-8 px-3 text-xs gap-1.5 justify-center"
+              className="h-9 px-4 text-xs gap-2 font-medium justify-center rounded-xl"
             >
               {installedPath ? (
                 <>
@@ -103,7 +103,7 @@ export function DiagnosticsView() {
               variant="secondary"
               onClick={handleClearAllCaches}
               disabled={clearingAll || apps.length === 0}
-              className="h-8 px-3 text-xs text-muted hover:text-fg justify-center"
+              className="h-9 px-4 text-xs rounded-xl text-muted hover:text-fg justify-center"
             >
               {clearingAll ? 'Purging...' : 'Purge All App Caches'}
             </Button>

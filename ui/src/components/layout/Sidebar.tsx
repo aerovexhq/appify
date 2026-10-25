@@ -30,9 +30,9 @@ export function Sidebar() {
   const { activeTab, setActiveTab, apps, presets, setSettingsModalOpen } = useAppifyStore();
 
   return (
-    <aside className="w-60 shrink-0 bg-surface border-r border-border flex flex-col justify-between p-3 select-none">
-      <div className="space-y-1">
-        <div className="px-3 py-1.5 text-[10px] font-mono tracking-wider text-muted uppercase">
+    <aside className="w-64 shrink-0 bg-surface border-r border-border flex flex-col justify-between p-4 select-none">
+      <div className="space-y-1.5">
+        <div className="px-3.5 py-2 text-[11px] font-mono tracking-wider text-muted uppercase">
           Navigation
         </div>
         {NAV_ITEMS.map((item) => {
@@ -44,20 +44,20 @@ export function Sidebar() {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
                 isActive
                   ? 'bg-raised text-fg shadow-xs font-semibold'
                   : 'text-muted hover:text-fg hover:bg-raised'
               }`}
             >
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 <Icon className={`w-4 h-4 ${isActive ? 'text-accent' : 'text-muted'}`} />
                 <span>{item.label}</span>
               </div>
               {count !== null && (
                 <span
-                  className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
-                    isActive ? 'bg-raised text-accent font-semibold' : 'bg-raised text-muted'
+                  className={`text-xs font-mono px-2 py-0.5 rounded-md ${
+                    isActive ? 'bg-surface text-accent font-semibold border border-accent/30' : 'bg-raised text-muted'
                   }`}
                 >
                   {count}
@@ -68,10 +68,10 @@ export function Sidebar() {
         })}
       </div>
 
-      <div className="pt-3 border-t border-border">
+      <div className="pt-4 border-t border-border">
         <button
           onClick={() => setSettingsModalOpen(true)}
-          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-muted hover:text-fg hover:bg-raised transition-colors cursor-pointer"
+          className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs text-muted hover:text-fg hover:bg-raised transition-colors cursor-pointer"
         >
           <Settings className="w-4 h-4 text-muted" />
           <span>Bundler Settings</span>

@@ -41,16 +41,16 @@ export function MarketplaceView() {
   const items = catalog?.items || [];
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 px-6 py-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+    <div className="flex-1 flex flex-col min-h-0 p-6 sm:p-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-lg font-semibold text-fg tracking-tight">Marketplace Catalog</h1>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-raised text-accent font-medium">
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl font-semibold text-fg tracking-tight">Marketplace Catalog</h1>
+            <span className="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-raised border border-accent/40 text-accent font-medium">
               Verified CDN
             </span>
           </div>
-          <p className="text-xs text-muted">
+          <p className="text-xs text-muted mt-0.5">
             Curated community and official extensions, dark readers, and cosmetic stylesheets.
           </p>
         </div>
@@ -59,7 +59,7 @@ export function MarketplaceView() {
           variant="ghost"
           onClick={handleRefresh}
           disabled={loading}
-          className="h-8 px-3 text-xs gap-1.5 text-muted hover:text-fg justify-center"
+          className="h-9 px-4 text-xs gap-2 rounded-xl text-muted hover:text-fg justify-center"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           <span>Refresh Catalog</span>
@@ -82,7 +82,7 @@ export function MarketplaceView() {
             />
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-8">
             {items.map((item) => {
               const isInstalled = installedIds.has(item.id);
               const isBusy = installingId === item.id;
@@ -90,12 +90,12 @@ export function MarketplaceView() {
               return (
                 <div
                   key={item.id}
-                  className="p-4 rounded-xl bg-surface border border-border hover:border-white/15 transition-all flex flex-col justify-between hover:shadow-[0_4px_24px_rgba(0,0,0,0.3)]"
+                  className="p-5 sm:p-6 rounded-2xl bg-surface border border-border hover:border-white/20 transition-all flex flex-col justify-between hover:shadow-[0_8px_30px_rgba(0,0,0,0.25)]"
                 >
                   <div>
-                    <div className="flex items-start justify-between gap-3 mb-2.5">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-lg bg-raised border border-border flex items-center justify-center shrink-0">
+                    <div className="flex items-start justify-between gap-3.5 mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-xl bg-raised border border-border flex items-center justify-center shrink-0 shadow-xs">
                           {item.category === 'plugin' ? (
                             <Code2 className="w-4 h-4 text-accent" />
                           ) : (
@@ -103,29 +103,29 @@ export function MarketplaceView() {
                           )}
                         </div>
                         <div>
-                          <h3 className="text-sm font-semibold text-fg">{item.name}</h3>
-                          <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className="text-[10px] font-mono text-muted">{item.author}</span>
-                            <span className="text-[10px] text-muted">•</span>
-                            <span className="text-[10px] font-mono text-muted">v{item.version}</span>
+                          <h3 className="text-base font-semibold text-fg">{item.name}</h3>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs font-mono text-muted">{item.author}</span>
+                            <span className="text-xs text-muted">•</span>
+                            <span className="text-xs font-mono text-muted">v{item.version}</span>
                           </div>
                         </div>
                       </div>
 
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-raised border border-border text-muted uppercase">
+                      <span className="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-raised border border-border text-muted uppercase">
                         {item.category}
                       </span>
                     </div>
 
-                    <p className="text-xs text-muted leading-relaxed line-clamp-2 my-2">
+                    <p className="text-xs text-muted leading-relaxed line-clamp-2 my-3">
                       {item.description}
                     </p>
                   </div>
 
-                  <div className="pt-3 border-t border-border mt-2">
+                  <div className="pt-4 border-t border-border mt-4">
                     {isInstalled ? (
-                      <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-medium py-1">
-                        <Check className="w-3.5 h-3.5" />
+                      <div className="flex items-center gap-2 text-xs text-emerald-400 font-medium py-1">
+                        <Check className="w-4 h-4" />
                         <span>Installed in Local Registry</span>
                       </div>
                     ) : (
@@ -133,7 +133,7 @@ export function MarketplaceView() {
                         variant="primary"
                         onClick={() => handleInstall(item.id)}
                         disabled={isBusy}
-                        className="w-full h-8 text-xs gap-1.5 font-medium justify-center"
+                        className="w-full h-9 px-4 text-xs gap-2 font-medium justify-center rounded-xl"
                       >
                         <Download className="w-3.5 h-3.5" />
                         <span>{isBusy ? 'Installing...' : 'Install Extension'}</span>

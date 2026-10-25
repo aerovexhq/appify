@@ -37,24 +37,24 @@ export function AppGrid() {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 px-6 py-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+    <div className="flex-1 flex flex-col min-h-0 p-6 sm:p-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-lg font-semibold text-fg tracking-tight">Installed Applications</h1>
-          <p className="text-xs text-muted">
+          <h1 className="text-xl font-semibold text-fg tracking-tight">Installed Applications</h1>
+          <p className="text-xs text-muted mt-0.5">
             Manage, launch, and configure your isolated desktop web applications.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="relative w-64">
+        <div className="flex items-center gap-2.5">
+          <div className="relative w-72">
             <Search className="w-3.5 h-3.5 text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search applications..."
-              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-pill bg-raised border border-border text-fg placeholder:text-muted focus:outline-none focus:border-white/30 transition-colors"
+              className="w-full h-9 pl-9 pr-4 text-xs rounded-xl bg-raised border border-border text-fg placeholder:text-muted focus:outline-none focus:border-white/30 transition-colors"
             />
           </div>
 
@@ -62,7 +62,7 @@ export function AppGrid() {
             variant="ghost"
             onClick={handleRefresh}
             disabled={refreshing}
-            className="h-8 w-8 p-0 rounded-pill text-muted hover:text-fg justify-center"
+            className="h-9 w-9 p-0 rounded-xl text-muted hover:text-fg justify-center"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
           </Button>
@@ -70,7 +70,7 @@ export function AppGrid() {
           <Button
             variant="primary"
             onClick={() => setActiveTab('wizard')}
-            className="h-8 px-3.5 text-xs rounded-pill font-medium gap-1.5 justify-center shadow-xs"
+            className="h-9 px-4 text-xs rounded-xl font-medium gap-2 justify-center shadow-xs"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Create New App</span>
@@ -100,7 +100,7 @@ export function AppGrid() {
             />
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-8">
             {filteredApps.map((app) => (
               <AppCard key={app.hash} app={app} onEdit={handleEdit} />
             ))}

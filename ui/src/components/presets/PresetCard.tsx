@@ -28,18 +28,18 @@ export function PresetCard({ preset }: PresetCardProps) {
   };
 
   return (
-    <div className="relative group rounded-2xl bg-surface border border-border hover:border-white/20 p-4.5 transition-all duration-200 flex flex-col justify-between hover:shadow-[0_8px_30px_rgba(0,0,0,0.25)]">
+    <div className="relative group rounded-2xl bg-surface border border-border hover:border-white/20 p-5 sm:p-6 transition-all duration-200 flex flex-col justify-between hover:shadow-[0_8px_30px_rgba(0,0,0,0.25)]">
       <div>
-        <div className="flex items-start justify-between gap-3 mb-2.5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-raised border border-border flex items-center justify-center font-bold text-sm text-accent bg-raised shrink-0 shadow-xs">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-xl bg-raised border border-border flex items-center justify-center font-bold text-base text-accent shrink-0 shadow-xs">
               {preset.name.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-fg group-hover:text-accent transition-colors">
+              <h3 className="text-base font-semibold text-fg group-hover:text-accent transition-colors">
                 {preset.name}
               </h3>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-raised text-muted">
+              <span className="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-raised border border-border text-muted mt-1 inline-block">
                 {preset.category}
               </span>
             </div>
@@ -48,13 +48,13 @@ export function PresetCard({ preset }: PresetCardProps) {
           {preset.is_installed ? (
             <StatusBadge status="online" label="INSTALLED" />
           ) : (
-            <span className="text-[10px] font-mono text-muted px-2 py-0.5 rounded-full bg-raised">
+            <span className="text-xs font-mono text-muted px-2.5 py-0.5 rounded-lg bg-raised border border-border">
               READY
             </span>
           )}
         </div>
 
-        <p className="text-xs text-muted leading-relaxed line-clamp-2 my-2">
+        <p className="text-xs text-muted leading-relaxed line-clamp-2 my-3">
           {preset.description}
         </p>
 
@@ -62,20 +62,20 @@ export function PresetCard({ preset }: PresetCardProps) {
           href={preset.url}
           target="_blank"
           rel="noreferrer"
-          className="text-[11px] font-mono text-muted/80 hover:text-accent flex items-center gap-1 truncate mt-1"
+          className="text-xs font-mono text-muted hover:text-accent flex items-center gap-1.5 truncate mt-1"
         >
           <span>{preset.url}</span>
-          <ExternalLink className="w-2.5 h-2.5 opacity-50 shrink-0" />
+          <ExternalLink className="w-3 h-3 opacity-50 shrink-0" />
         </a>
       </div>
 
-      <div className="pt-3 border-t border-border mt-3">
+      <div className="pt-4 border-t border-border mt-4">
         {preset.is_installed ? (
           <div className="flex items-center gap-2">
             <Button
               variant="secondary"
               onClick={handleOpen}
-              className="flex-1 h-8 text-xs gap-1.5 justify-center"
+              className="flex-1 h-9 px-4 text-xs gap-2 font-medium justify-center rounded-xl"
             >
               <Play className="w-3.5 h-3.5 fill-current" />
               <span>Open Installed App</span>
@@ -86,7 +86,7 @@ export function PresetCard({ preset }: PresetCardProps) {
             variant="primary"
             onClick={handleInstall}
             disabled={installing}
-            className="w-full h-8 text-xs gap-1.5 font-medium justify-center"
+            className="w-full h-9 px-4 text-xs gap-2 font-medium justify-center rounded-xl"
           >
             <Download className="w-3.5 h-3.5" />
             <span>{installing ? 'Installing...' : 'Install Preset'}</span>
