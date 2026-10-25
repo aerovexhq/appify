@@ -9,3 +9,5 @@ dist/
 dist-release/
 *.log
 
+*.deb
+*.AppImage

@@ -1,7 +1,7 @@
 {
   "productName": "appify",
   "version": "0.2.0",
-  "identifier": "com.appify.runtime",
+  "identifier": "net.aerovex.appify",
   "build": {
     "beforeBuildCommand": "cd ui && npm run build",
     "devUrl": "http://localhost:5173",
@@ -27,7 +27,7 @@
     ],
     "shortDescription": "Turn web apps into lightweight desktop apps",
     "longDescription": "Appify is a modern desktop manager and CLI utility that turns web apps into lightweight, isolated desktop apps powered by Tauri.",
-    "copyright": "Copyright © 2026 Appify",
+    "copyright": "Copyright \u00a9 2026 Appify",
     "category": "Utility",
     "publisher": "Appify",
     "linux": {
