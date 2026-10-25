@@ -61,7 +61,7 @@ export function PresetStore() {
               onClick={() => setSelectedCategory(cat)}
               className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
                 isSelected
-                  ? 'bg-accent/15 text-accent border border-accent/40 shadow-[0_0_10px_rgba(0,229,255,0.1)]'
+                  ? 'bg-accent/15 text-accent border border-accent/40 shadow-sm'
                   : 'text-muted hover:text-fg hover:bg-raised/70 border border-transparent'
               }`}
             >

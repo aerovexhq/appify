@@ -16,7 +16,7 @@ const rootEl = document.getElementById('root');
 if (rootEl) {
   ReactDOM.createRoot(rootEl).render(
     <React.StrictMode>
-      <StrataThemeProvider theme="aerovex" preset="launcher">
+      <StrataThemeProvider theme="aerovex" preset="appify">
         <App />
       </StrataThemeProvider>
     </React.StrictMode>

@@ -13,7 +13,7 @@
     padding: 0;
     user-select: none;
     -webkit-user-select: none;
-    background-color: var(--k-bg, #08090a);
-    color: var(--k-fg, #fbfbfa);
+    background-color: var(--bg-primary, #0f1015);
+    color: var(--text-primary, #fbfbfa);
   }
 }

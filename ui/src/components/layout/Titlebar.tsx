@@ -1,4 +1,4 @@
-import { Layers, Settings, HelpCircle, Terminal } from 'lucide-react';
+import { AppWindow, Settings, HelpCircle, Terminal } from 'lucide-react';
 import { Button, Tooltip } from '@aerovex/strata-ui';
 import { useAppifyStore } from '../../state/useAppifyStore';
 
@@ -17,7 +17,7 @@ export function Titlebar() {
     >
       <div className="flex items-center gap-2.5" data-tauri-drag-region>
         <div className="w-5 h-5 rounded-md bg-accent/20 border border-accent/40 flex items-center justify-center">
-          <Layers className="w-3 h-3 text-accent" />
+          <AppWindow className="w-3 h-3 text-accent" />
         </div>
         <div className="flex items-baseline gap-2">
           <span className="font-semibold text-xs tracking-wider text-fg uppercase">
