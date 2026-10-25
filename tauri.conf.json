@@ -3,8 +3,9 @@
   "version": "0.2.0",
   "identifier": "com.appify.runtime",
   "build": {
-    "devUrl": null,
-    "frontendDist": "ui"
+    "beforeBuildCommand": "cd ui && npm run build",
+    "devUrl": "http://localhost:5173",
+    "frontendDist": "ui/dist"
   },
   "app": {
     "withGlobalTauri": true,
