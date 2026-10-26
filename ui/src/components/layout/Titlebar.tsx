@@ -19,20 +19,20 @@ export function Titlebar() {
       <Tooltip content="Keyboard Shortcuts (?)">
         <Button
           variant="icon"
+          aria-label="Keyboard Shortcuts"
           onClick={() => setShortcutsModalOpen(true)}
-          className="h-7 w-7 text-muted hover:text-fg"
         >
-          <HelpCircle className="w-3.5 h-3.5" />
+          <HelpCircle className="w-4 h-4" />
         </Button>
       </Tooltip>
 
       <Tooltip content="Preferences (Ctrl+,)">
         <Button
           variant="icon"
+          aria-label="Preferences"
           onClick={() => setSettingsModalOpen(true)}
-          className="h-7 w-7 text-muted hover:text-fg"
         >
-          <Settings className="w-3.5 h-3.5" />
+          <Settings className="w-4 h-4" />
         </Button>
       </Tooltip>
     </>
