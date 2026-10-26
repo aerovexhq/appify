@@ -1,11 +1,9 @@
-import { Settings, HelpCircle, Terminal } from 'lucide-react';
+import { Settings, HelpCircle } from 'lucide-react';
 import { AppifyMark, StrataTitlebar, Button, Tooltip } from '@aerovex/strata-ui';
 import { useAppifyStore } from '../../state/useAppifyStore';
 
 export function Titlebar() {
   const {
-    activeTab,
-    setActiveTab,
     setSettingsModalOpen,
     setShortcutsModalOpen,
   } = useAppifyStore();
@@ -18,14 +16,13 @@ export function Titlebar() {
 
   const rightActions = (
     <>
-      <Tooltip content="Diagnostics & Event Log">
+      <Tooltip content="Keyboard Shortcuts (?)">
         <Button
-          variant={activeTab === 'diagnostics' ? 'secondary' : 'ghost'}
-          onClick={() => setActiveTab('diagnostics')}
-          className="h-7 px-2.5 rounded-pill text-xs gap-1.5 text-muted hover:text-fg"
+          variant="icon"
+          onClick={() => setShortcutsModalOpen(true)}
+          className="h-7 w-7 text-muted hover:text-fg"
         >
-          <Terminal className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline font-medium">Diagnostics</span>
+          <HelpCircle className="w-3.5 h-3.5" />
         </Button>
       </Tooltip>
 

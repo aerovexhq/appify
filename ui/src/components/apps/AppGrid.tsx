@@ -73,7 +73,7 @@ export function AppGrid() {
             className="h-9 px-4 text-xs rounded-xl font-medium gap-2 justify-center shadow-xs"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Create New App</span>
+            <span>New App</span>
           </Button>
         </div>
       </div>

@@ -20,7 +20,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { id: 'apps', label: 'My Applications', icon: LayoutGrid, countKey: 'apps' },
   { id: 'presets', label: 'Curated Presets', icon: Sparkles, countKey: 'presets' },
-  { id: 'wizard', label: 'Create New App', icon: PlusCircle },
+  { id: 'wizard', label: 'New App', icon: PlusCircle },
   { id: 'extensions', label: 'UserScripts & Themes', icon: Puzzle },
   { id: 'marketplace', label: 'Marketplace', icon: ShoppingBag },
   { id: 'diagnostics', label: 'Diagnostics & Logs', icon: Activity },
