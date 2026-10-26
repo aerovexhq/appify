@@ -12,6 +12,10 @@ use url::Url;
 #[derive(Parser)]
 #[command(name = "appify", version, about = "Convert web apps into isolated desktop apps", long_about = None)]
 struct Cli {
+    /// Development server URL for live Vite HMR (e.g. http://localhost:5173)
+    #[arg(long)]
+    dev_url: Option<String>,
+
     #[command(subcommand)]
     command: Option<Commands>,
 }
@@ -4928,6 +4932,10 @@ fn self_install_binary_cmd() -> Result<String, String> {
 }
 
 fn execute_gui_manager() {
+    let dev_url = std::env::var("APPIFY_DEV_URL")
+        .or_else(|_| std::env::var("STRATA_DEV_URL"))
+        .ok();
+
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
@@ -4950,14 +4958,24 @@ fn execute_gui_manager() {
             get_marketplace_catalog_cmd,
             install_marketplace_item_cmd,
         ])
-        .setup(|app| {
+        .setup(move |app| {
             let icon_img = app.default_window_icon().cloned()
                 .or_else(|| tauri::image::Image::from_bytes(FALLBACK_ICON_BYTES).ok());
+
+            let webview_url = if let Some(ref url_str) = dev_url {
+                if let Ok(parsed) = url::Url::parse(url_str) {
+                    tauri::WebviewUrl::External(parsed)
+                } else {
+                    tauri::WebviewUrl::App("index.html".into())
+                }
+            } else {
+                tauri::WebviewUrl::App("index.html".into())
+            };
 
             let mut builder = tauri::WebviewWindowBuilder::new(
                 app,
                 "manager",
-                tauri::WebviewUrl::App("index.html".into()),
+                webview_url,
             )
             .title("Appify — Desktop Web App Manager")
             .inner_size(1120.0, 750.0)
@@ -4992,6 +5010,9 @@ fn main() {
 
     match cli.command {
         None | Some(Commands::Ui) | Some(Commands::Gui) => {
+            if let Some(dev_url) = cli.dev_url {
+                std::env::set_var("APPIFY_DEV_URL", dev_url);
+            }
             execute_gui_manager();
         }
         Some(Commands::Install {

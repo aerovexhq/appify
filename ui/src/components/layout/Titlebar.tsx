@@ -26,16 +26,6 @@ export function Titlebar() {
         </Button>
       </Tooltip>
 
-      <Tooltip content="Keyboard Shortcuts (?)">
-        <Button
-          variant="icon"
-          onClick={() => setShortcutsModalOpen(true)}
-          className="h-7 w-7 text-muted hover:text-fg"
-        >
-          <HelpCircle className="w-3.5 h-3.5" />
-        </Button>
-      </Tooltip>
-
       <Tooltip content="Preferences (Ctrl+,)">
         <Button
           variant="icon"
