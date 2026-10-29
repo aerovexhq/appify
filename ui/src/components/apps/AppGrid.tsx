@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Search, Plus, RefreshCw } from 'lucide-react';
-import { Button, HeroEmptyCard } from '@aerovex/strata-ui';
+import { Plus, RefreshCw } from 'lucide-react';
+import { Button, HeroEmptyCard, SearchInput } from '@aerovex/strata-ui';
 import type { AppInfoDto } from '../../types';
 import { useAppifyStore } from '../../state/useAppifyStore';
 import { AppCard } from './AppCard';
@@ -47,14 +47,11 @@ export function AppGrid() {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <div className="relative w-72">
-            <Search className="w-3.5 h-3.5 text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input
-              type="text"
+          <div className="w-72">
+            <SearchInput
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={setSearchQuery}
               placeholder="Search applications..."
-              className="w-full h-9 pl-9 pr-4 text-xs rounded-xl bg-raised border border-border text-fg placeholder:text-muted focus:outline-none focus:border-white/30 transition-colors"
             />
           </div>
 

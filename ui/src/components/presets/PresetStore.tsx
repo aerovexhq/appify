@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Search } from 'lucide-react';
-import { HeroEmptyCard } from '@aerovex/strata-ui';
+import { HeroEmptyCard, SearchInput, Button } from '@aerovex/strata-ui';
 import { useAppifyStore } from '../../state/useAppifyStore';
 import { PresetCard } from './PresetCard';
 
@@ -40,14 +39,11 @@ export function PresetStore() {
           </p>
         </div>
 
-        <div className="relative w-72">
-          <Search className="w-3.5 h-3.5 text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <input
-            type="text"
+        <div className="w-72">
+          <SearchInput
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={setSearch}
             placeholder="Search preset catalog..."
-            className="w-full h-9 pl-9 pr-4 text-xs rounded-xl bg-raised border border-border text-fg placeholder:text-muted focus:outline-none focus:border-white/30 transition-colors"
           />
         </div>
       </div>
@@ -56,17 +52,15 @@ export function PresetStore() {
         {CATEGORIES.map((cat) => {
           const isSelected = selectedCategory === cat;
           return (
-            <button
+            <Button
               key={cat}
+              variant={isSelected ? "secondary" : "ghost"}
+              size="sm"
               onClick={() => setSelectedCategory(cat)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
-                isSelected
-                  ? 'bg-raised text-fg shadow-xs font-semibold border border-white/20'
-                  : 'text-muted hover:text-fg hover:bg-raised border border-transparent'
-              }`}
+              className={isSelected ? "font-semibold border-white/20" : ""}
             >
               {cat}
-            </button>
+            </Button>
           );
         })}
       </div>
